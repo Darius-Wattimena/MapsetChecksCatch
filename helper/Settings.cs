@@ -11,16 +11,28 @@
         public const float CATCHER_WALK_SPEED = CATCHER_SPEED / 2;
     }
 
+    public enum Luminosity
+    {
+        LOWER = 50,
+        HIGHER = 220
+    }
+
     public enum AllowedDash
     {
         DIFF_N = 125,
-        DIFFs_HI = 62
+        DIFFS_HI = 62
     }
 
     public enum AllowedHyperDash
     {
         DIFF_H = 125,
-        DIFF_I = 62,
+        DIFF_I = 62
+    }
+
+    public enum AllowedHyperDashConsecutive
+    {
+        DIFF_H = 2,
+        DIFF_I = 4
     }
 
     public enum AllowedSpinnerGapStart

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace MapsetChecksCatch.helper
 {
-    public class CatchHitObject : HitObject
+    public sealed class CatchHitObject : HitObject
     {
-        public CatchHitObject(string[] anArgs, Beatmap aBeatmap) : base(anArgs, aBeatmap)
+        public CatchHitObject(string[] anArgs, Beatmap beatmap) : base(anArgs, beatmap)
         {
-            x = Position.X;
+            X = Position.X;
         }
 
-        public float x;
+        public float X;
         public float DistanceToHyperDash { get; set; }
         public double PixelsToHyperDash { get; set; }
         public bool IsHyperDash => HyperDashTarget != null;
@@ -18,27 +18,26 @@ namespace MapsetChecksCatch.helper
         public CatchHitObject Origin { get; set; }
         public List<CatchHitObject> Extras { get; set; }
 
-        public bool IsHigherSnapped(Beatmap.Difficulty difficulty)
+        /**
+         * Check if the current object is hypersnapped taking the current objects start point and the end point of the last object.
+         *
+         * Providing a difficulty level and if the last object was a hyper
+         */
+        public bool IsHigherSnapped(Beatmap.Difficulty difficulty, bool wasHyper)
         {
             var ms = GetPrevDeltaTime();
 
-            if (difficulty == Beatmap.Difficulty.Normal)
+            return difficulty switch
             {
-                return ms < (int) AllowedDash.DIFF_N;
-            }
-            else if (difficulty == Beatmap.Difficulty.Hard)
-            {
-                return ms < (IsHyperDash ? (int) AllowedHyperDash.DIFF_H * 2 : (int) AllowedDash.DIFFs_HI * 2);
-            }
-            else if (difficulty == Beatmap.Difficulty.Insane)
-            {
-                return ms < (IsHyperDash ? (int) AllowedHyperDash.DIFF_I * 2 : (int) AllowedDash.DIFFs_HI * 2);
-            }
-            else
-            {
-                // Cup and Overdoses don't have highersnapped distances
-                return false;
-            }
+                Beatmap.Difficulty.Normal => (ms < (int) AllowedDash.DIFF_N),
+                Beatmap.Difficulty.Hard => (ms < (wasHyper
+                    ? (int) AllowedHyperDash.DIFF_H * 2
+                    : (int) AllowedDash.DIFFS_HI * 2)),
+                Beatmap.Difficulty.Insane => (ms < (wasHyper
+                    ? (int) AllowedHyperDash.DIFF_I * 2
+                    : (int) AllowedDash.DIFFS_HI * 2)),
+                _ => false
+            };
         }
     }
 }
