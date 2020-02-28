@@ -29,14 +29,25 @@ namespace MapsetChecksCatch.checks.compose
             Documentation = new Dictionary<string, string>
             {
                 {
+                    "Note",
+                    "So far only checks consecutive hyperdashes and highersnapped hyperdashes followed by a different snap hyperdash."
+                },
+                {
                     "Purpose",
                     @"
-                    soon."
+                    <b>Rain</b> : 
+                    Basic hyperdashes must not be used more than four times between consecutive fruits. 
+                    If higher-snapped hyperdashes are used, they must not be used in conjunction with other hyperdashes or higher-snapped dashes.
+                    </br>
+                    <b>Platter</b> : 
+                    Basic hyperdashes must not be used more than two times between consecutive fruits. 
+                    If higher-snapped hyperdashes are used, they must be used singularly (not in conjunction with other hyperdashes or dashes)."
                 },
                 {
                     "Reasoning",
                     @"
-                    soon."
+                    The amount of hyperdashes used in a difficulty should be increasing which each difficulty level.
+                    In platters the maximum amount of hyperdashes is set to two because the difficulty is meant to be an introduction to hypers."
                 }
             }
         };
@@ -55,7 +66,7 @@ namespace MapsetChecksCatch.checks.compose
                 {
                     ConsecutivePlatterSnap,
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} A highersnapped hyperdash followed by a different snapped hyperdash or dash.",
+                            "{0} A highersnapped hyperdash followed by a different snapped hyperdash.",
                             "timestamp - ")
                         .WithCause("Higher snapped hyperdash followed by a different snapped hyperdash.")
                 },

@@ -35,7 +35,8 @@ namespace MapsetChecksCatch.checks.compose
                 {
                     "Reasoning",
                     @"
-                    soon."
+                    Edge dashes require precise movement, on lower difficulties we cannot expect such accuracy from players.
+                    On Rains "
                 }
             }
         };
@@ -97,8 +98,8 @@ namespace MapsetChecksCatch.checks.compose
                         yield return EdgeDashIssue(GetTemplate(EdgeDash), beatmap, currentObject, Beatmap.Difficulty.Insane);
 
                         yield return EdgeDashIssue(GetTemplate(EdgeDashMinor), beatmap, currentObject, Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra);
-                    } 
-                        
+                    }
+
                     if (currentObject.DistanceToHyperDash < 10)
                     {
                         yield return EdgeDashIssue(GetTemplate(EdgeDashProblem), beatmap, currentObject, Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard);

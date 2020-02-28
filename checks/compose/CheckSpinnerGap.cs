@@ -33,7 +33,13 @@ namespace MapsetChecksCatch.checks.compose
                 {
                     "Purpose",
                     @"
-                    To ensure readability."
+                    There must be a gap between the start and end of a spinner to ensure readability."
+                },
+                {
+                    "Reasoning",
+                    @"
+                    The start and end of a spinner can make it hard to read the next objects. 
+                    On lower diffs a bigger gap is used to make it easier for the player to react on the new objects and to not fall in a spinner trap."
                 }
             }
         };
