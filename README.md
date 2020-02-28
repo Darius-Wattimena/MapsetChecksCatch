@@ -28,9 +28,10 @@ MapsetChecksCatch is like [MapsetChecks](https://github.com/Naxesss/MapsetChecks
 ## How to install
 
 - Download the latest release of `MapsetChecksCatch.dll` (which can be found at the [release tab](https://github.com/Darius-Wattimena/MapsetChecksCatch/releases))
-- Go to your *Roaming* folder by doing either:
+- Open your *Roaming* folder, you can find it with either:
 	- Typing `%APPDATA%` in your file explorer's address bar.
 	- Navigate to the folder yourself `C:/Users/<YOURNAME>/AppData/Roaming`.
-- Open the `Mapset Verifier Externals` folder and then the `checks` folder.
+- Open the `Mapset Verifier Externals` folder.
+- Open the `checks` folder.
 - Place the `MapsetChecksCatch.dll` file in this folder.
 > **Note:** Do not get confused with the checks folder of Mapset Verifier itself. That folder is only used for official plugins not for thirdparty plugins like this one.
