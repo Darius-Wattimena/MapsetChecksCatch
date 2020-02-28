@@ -1,6 +1,6 @@
 # MapsetChecksCatch
 
-MapsetChecksCatch is like [MapsetChecks](https://github.com/Naxesss/MapsetChecks) a plugin for [MapsetVerifier](https://github.com/Naxesss/MapsetVerifier) which is used to add extra checks for the gamemode osu!catch. The CatchObjectMapper was taken and enhanced from [CatchCheck](https://github.com/rorre/CatchCheck) so big props to [-Keitaro](https://osu.ppy.sh/users/3378391) for that!
+MapsetChecksCatch is like [MapsetChecks](https://github.com/Naxesss/MapsetChecks) a plugin for [MapsetVerifier](https://github.com/Naxesss/MapsetVerifier) which is used to add extra checks for the gamemode osu!catch. The ObjectMapper was taken and enhanced from [CatchCheck](https://github.com/rorre/CatchCheck) so big props to [-Keitaro](https://osu.ppy.sh/users/3378391) for that!
 
 > **Note:** It is still in heavy development so [false positives and false negatives](https://en.wikipedia.org/wiki/False_positives_and_false_negatives) may occur. If you found something that isn't right feel free to open an issue.
 
