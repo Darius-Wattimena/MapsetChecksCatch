@@ -24,7 +24,7 @@ namespace MapsetChecksCatch.checks.compose
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = Settings.CATEGORY_COMPOSE,
-            Message = "Spinner gap.",
+            Message = "Too short spinner gap.",
             Modes = new[] {Beatmap.Mode.Catch},
             Author = Settings.AUTHOR,
 

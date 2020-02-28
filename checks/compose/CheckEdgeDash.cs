@@ -49,21 +49,21 @@ namespace MapsetChecksCatch.checks.compose
                     EdgeDashMinor,
                     new IssueTemplate(Issue.Level.Minor,
                             "{0} This object is {1} pixel(s) away from being a hyper, make sure this is intended.",
-                            "timestamp - ", "pixel(s)")
+                            "timestamp - ", "amount")
                         .WithCause("X amount of pixels off to become a hyperdash.")
                 },
                 {
                     EdgeDash,
                     new IssueTemplate(Issue.Level.Warning,
                             "{0} This object is {1} pixel(s) away from being a hyper, make sure this is used properly.",
-                            "timestamp - ", "pixel(s)")
+                            "timestamp - ", "amount")
                         .WithCause("X amount of pixels off to become a hyperdash.")
                 },
                 {
                     EdgeDashProblem,
                     new IssueTemplate(Issue.Level.Problem,
                             "{0} This object is {1} pixel(s) away from being a hyper.",
-                            "timestamp - ", "pixel(s)")
+                            "timestamp - ", "amount")
                         .WithCause("Usage of edge dashes on lower diffs.")
                 }
             };
@@ -75,7 +75,8 @@ namespace MapsetChecksCatch.checks.compose
                 template,
                 beatmap,
                 Timestamp.Get(currentObject.time),
-                $"{(int) Math.Ceiling(currentObject.DistanceToHyperDash)}"
+                $"{(int) Math.Round(currentObject.DistanceToHyperDash)}",
+                currentObject.DistanceToHyperDash
             ).ForDifficulties(difficulties);
         }
 
@@ -91,7 +92,7 @@ namespace MapsetChecksCatch.checks.compose
             {
                 if (currentObject.Extras == null)
                 {
-                    if ((int) Math.Ceiling(currentObject.DistanceToHyperDash) < 1) continue;
+                    if ((int) Math.Round(currentObject.DistanceToHyperDash) < 1) continue;
 
                     if (currentObject.DistanceToHyperDash < 5)
                     {
@@ -108,7 +109,7 @@ namespace MapsetChecksCatch.checks.compose
                 else
                 {
                     foreach (var sliderPart in currentObject.Extras
-                        .Where(sliderPart => !sliderPart.IsHyperDash && !((int) Math.Ceiling(sliderPart.DistanceToHyperDash) < 1)))
+                        .Where(sliderPart => !sliderPart.IsHyperDash && !((int) Math.Round(sliderPart.DistanceToHyperDash) < 1)))
                     {
                         if (sliderPart.DistanceToHyperDash < 5)
                         {

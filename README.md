@@ -9,14 +9,13 @@ MapsetChecksCatch is like [MapsetChecks](https://github.com/Naxesss/MapsetChecks
  - Spinner gap check
  - Edge dashes
  - Consecutive hyperdashes
- - Luminosity of combo colour
 
-**Miner check:**
+**Minor checks:**
+ - Luminosity of combo colour
  - Max combo guideline
  - Spinner present
 
 ## Planned checks
-
  - Hyperdashes in Cups/Salads
  - Dashes in Cups
  - Consecutive edge dash usage in Rains/Overdoses
@@ -25,7 +24,6 @@ MapsetChecksCatch is like [MapsetChecks](https://github.com/Naxesss/MapsetChecks
  - Difficulty guideline settings
 
 ## How to install
-
 - Download the latest release of `MapsetChecksCatch.dll` (which can be found at the [release tab](https://github.com/Darius-Wattimena/MapsetChecksCatch/releases))
 - Open your *Roaming* folder, you can find it with either:
 	- Typing `%APPDATA%` in your file explorer's address bar.
