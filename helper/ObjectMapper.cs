@@ -78,7 +78,7 @@ namespace MapsetChecksCatch.helper
         {
             var objectWithDroplets = new List<CatchHitObject>();
 
-            foreach (var currentObject in mapObjects.Where(currentObject => currentObject.GetObjectType() != "Spinner"))
+            foreach (var currentObject in mapObjects.Where(currentObject => currentObject.type != HitObject.Type.Spinner))
             {
                 objectWithDroplets.Add(currentObject);
 
@@ -90,6 +90,8 @@ namespace MapsetChecksCatch.helper
 
                 objectWithDroplets.AddRange(currentObject.Extras);
             }
+
+            if (objectWithDroplets.Count < 2) return;
 
             objectWithDroplets.Sort((h1, h2) => h1.time.CompareTo(h2.time));
 
@@ -121,14 +123,13 @@ namespace MapsetChecksCatch.helper
                 {
                     currentObject.DistanceToHyperDash = distanceToHyper;
                     currentObject.HyperDashTarget = nextObject;
+                    currentObject.IsWalkable = false;
                     lastExcess = halfCatcherWidth;
                 }
                 else
                 {
                     currentObject.DistanceToHyperDash = distanceToHyper;
-                    var requiredAbsolute = distanceToHyper + distanceToNext +
-                                           (lastDirection == thisDirection ? lastExcess : halfCatcherWidth);
-                    currentObject.PixelsToHyperDash = requiredAbsolute - distanceToNext;
+                    currentObject.IsWalkable = true; // TODO: this is not true since it can also be a normal jump at this point
                     lastExcess = Clamp(distanceToHyper, 0, halfCatcherWidth);
                 }
 

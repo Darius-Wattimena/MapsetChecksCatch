@@ -12,8 +12,9 @@ namespace MapsetChecksCatch.helper
 
         public float X;
         public float DistanceToHyperDash { get; set; }
-        public double PixelsToHyperDash { get; set; }
         public bool IsHyperDash => HyperDashTarget != null;
+        //TODO add support for walk detection
+        public bool IsWalkable { get; set; } = true;
         public CatchHitObject HyperDashTarget { get; set; }
         public CatchHitObject Origin { get; set; }
         public List<CatchHitObject> Extras { get; set; }

@@ -59,7 +59,7 @@ namespace MapsetChecksCatch.checks.compose
                 {
                     Consecutive,
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} To many consecutive hyperdashes were used and should be at most {1}, currently {2}.",
+                            "{0} Too many consecutive hyperdashes were used and should be at most {1}, currently {2}.",
                             "timestamp - ", "rule amount", "amount")
                         .WithCause("To many consecutive hyperdash are used.")
                 },

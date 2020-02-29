@@ -36,7 +36,10 @@ namespace MapsetChecksCatch.checks.compose
                     "Reasoning",
                     @"
                     Edge dashes require precise movement, on lower difficulties we cannot expect such accuracy from players.
-                    On Rains "
+                    </br>
+                    On Rains edge dashes may only be used singularly. 
+                    </br>
+                    On Overdose they may be used with caution for a maximum of three consecutive objects, and should not be used after hyperdashes."
                 }
             }
         };
@@ -88,7 +91,7 @@ namespace MapsetChecksCatch.checks.compose
             catchObjectManager.CalculateJumps(catchObjects, beatmap);
 
             foreach (var currentObject in catchObjects
-                .Where(currentObject => !currentObject.IsHyperDash && currentObject.type != HitObject.Type.Spinner))
+                .Where(currentObject => currentObject.type != HitObject.Type.Spinner && !currentObject.IsHyperDash))
             {
                 if (currentObject.Extras == null)
                 {
