@@ -48,9 +48,9 @@ namespace MapsetChecksCatch.checks.compose
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
-            var catchObjectManager = new ObjectManager();
+            var catchObjectManager = new ObjectManager(beatmap);
+            var catchObjects = catchObjectManager.Objects;
 
-            var catchObjects = catchObjectManager.GenerateCatchObjects(beatmap);
             catchObjectManager.CalculateJumps(catchObjects, beatmap);
 
             foreach (var currentObject in catchObjects
@@ -59,7 +59,7 @@ namespace MapsetChecksCatch.checks.compose
                 yield return new Issue(
                     GetTemplate(ContainsHyperdash),
                     beatmap,
-                    Timestamp.Get(currentObject.time)
+                    Timestamp.Get(currentObject)
                 ).ForDifficulties(Beatmap.Difficulty.Easy, Beatmap.Difficulty.Normal);
             }
         }

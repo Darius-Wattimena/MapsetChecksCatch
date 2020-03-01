@@ -9,7 +9,9 @@ namespace MapsetChecksCatch.helper
 {
     public class ObjectManager
     {
-        public List<CatchHitObject> GenerateCatchObjects(Beatmap beatmap)
+        public List<CatchHitObject> Objects;
+
+        public ObjectManager(Beatmap beatmap)
         {
             var mapObjects = beatmap.hitObjects;
             var objects = new List<CatchHitObject>();
@@ -19,32 +21,15 @@ namespace MapsetChecksCatch.helper
                 var objectExtras = new List<CatchHitObject>();
                 var objectCode = mapSliderObject.code.Split(',');
 
+                var sliderObject = new CatchHitObject(objectCode, beatmap);
+
                 // Slider ticks
-                foreach (var tickTimes in mapSliderObject.sliderTickTimes)
-                {
-                    objectCode[0] = Math.Round(mapSliderObject.GetPathPosition(tickTimes).X)
-                        .ToString(CultureInfo.InvariantCulture);
-                    objectCode[2] = tickTimes.ToString(CultureInfo.InvariantCulture);
-                    var line = string.Join(",", objectCode);
-                    var node = new CatchHitObject(line.Split(','), beatmap);
-                    objectExtras.Add(node);
-                }
+                objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, mapSliderObject.sliderTickTimes, objectCode));
 
-                foreach (double ticktimes in GetEdgeTimes(mapSliderObject))
-                {
-                    // Slider repeats and tail
-                    objectCode[0] = Math.Round(mapSliderObject.GetPathPosition(ticktimes).X)
-                        .ToString(CultureInfo.InvariantCulture);
-                    objectCode[2] = ticktimes.ToString(CultureInfo.InvariantCulture);
-                    var line = string.Join(",", objectCode);
-                    var node = new CatchHitObject(line.Split(','), beatmap);
-                    objectExtras.Add(node);
-                }
+                // Slider repeats and tail
+                objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, GetEdgeTimes(mapSliderObject), objectCode));
 
-                var sliderObject = new CatchHitObject(mapSliderObject.code.Split(','), beatmap)
-                {
-                    Extras = objectExtras
-                };
+                sliderObject.Extras = objectExtras;
                 objects.Add(sliderObject);
             }
 
@@ -65,13 +50,25 @@ namespace MapsetChecksCatch.helper
                 }
             }
 
-            return objects;
+            Objects = objects;
+            //beatmap.hitObjects = new List<HitObject>(objects);
         }
 
         private static IEnumerable<double> GetEdgeTimes(Slider sObject)
         {
             for (var i = 0; i < sObject.edgeAmount; ++i)
                 yield return sObject.time + sObject.GetCurveDuration() * (i + 1);
+        }
+
+        private static IEnumerable<CatchHitObject> CreateObjectExtra(Beatmap beatmap, Slider slider, IEnumerable<double> times, string[] objectCode)
+        {
+            foreach (var time in times)
+            {
+                objectCode[0] = Math.Round(slider.GetPathPosition(time).X)
+                    .ToString(CultureInfo.InvariantCulture);
+                objectCode[2] = time.ToString(CultureInfo.InvariantCulture);
+                yield return new CatchHitObject(objectCode, beatmap);
+            }
         }
 
         public void CalculateJumps(List<CatchHitObject> mapObjects, Beatmap aBeatmap)
