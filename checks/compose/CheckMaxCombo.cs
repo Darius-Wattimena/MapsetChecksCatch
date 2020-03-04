@@ -86,8 +86,8 @@ namespace MapsetChecksCatch.checks.compose
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
             var count = 1;
-            var catchObjectManager = new ObjectManager(beatmap);
-            var catchObjects = catchObjectManager.Objects;
+            var catchObjectManager = new ObjectManager();
+            var catchObjects = catchObjectManager.LoadBeatmap(beatmap);
 
             if (catchObjects.Count == 0)
             {
@@ -105,7 +105,7 @@ namespace MapsetChecksCatch.checks.compose
                 var objectTypes = (Type) int.Parse(objectCodeArgs[3]);
 
 
-                if (objectTypes.HasFlag(Type.NewCombo) || i == catchObjects.Count - 1)
+                if (objectTypes.HasFlag(Type.NewCombo))
                 {
                     // FIXME: amount of the same calls
                     if (count > ThresholdCup)
@@ -163,6 +163,51 @@ namespace MapsetChecksCatch.checks.compose
                     if (currentObject.Extras == null) continue;
                     count += currentObject.Extras.Count;
                 }
+            }
+
+            if (count > ThresholdCup)
+            {
+                yield return ComboIssue(beatmap, startObject, ThresholdCup, count, new[] { Difficulty.Easy });
+            }
+
+            if (count > ThresholdCup * SignificantMultiplier)
+            {
+                yield return ComboIssue(beatmap, startObject, ThresholdCup, count, new[] { Difficulty.Easy },
+                    true);
+            }
+
+            if (count > ThresholdSalad)
+            {
+                yield return ComboIssue(beatmap, startObject, ThresholdSalad, count, new[] { Difficulty.Normal });
+            }
+
+            if (count > ThresholdSalad * SignificantMultiplier)
+            {
+                yield return ComboIssue(beatmap, startObject, ThresholdSalad, count, new[] { Difficulty.Normal },
+                    true);
+            }
+
+            if (count > ThresholdPlatter)
+            {
+                yield return ComboIssue(beatmap, startObject, ThresholdPlatter, count, new[] { Difficulty.Hard });
+            }
+
+            if (count > ThresholdPlatter * SignificantMultiplier)
+            {
+                yield return ComboIssue(beatmap, startObject, ThresholdPlatter, count, new[] { Difficulty.Hard },
+                    true);
+            }
+
+            if (count > ThresholdRainAndOverdose)
+            {
+                yield return ComboIssue(beatmap, startObject, ThresholdRainAndOverdose, count,
+                    new[] { Difficulty.Insane, Difficulty.Expert, Difficulty.Ultra });
+            }
+
+            if (count > ThresholdRainAndOverdose * SignificantMultiplier)
+            {
+                yield return ComboIssue(beatmap, startObject, ThresholdRainAndOverdose, count,
+                    new[] { Difficulty.Insane, Difficulty.Expert, Difficulty.Ultra }, true);
             }
         }
     }

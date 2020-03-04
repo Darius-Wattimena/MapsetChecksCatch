@@ -78,54 +78,56 @@ namespace MapsetChecksCatch.checks.compose
                 template,
                 beatmap,
                 Timestamp.Get(currentObject.time),
-                $"{(int) Math.Round(currentObject.DistanceToHyperDash)}",
-                currentObject.DistanceToHyperDash
+                $"{Math.Floor(currentObject.DistanceToHyperDash)}"
             ).ForDifficulties(difficulties);
         }
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
-            var catchObjectManager = new ObjectManager(beatmap);
-            var catchObjects = catchObjectManager.Objects;
+            var catchObjectManager = new ObjectManager();
+            var catchObjects = catchObjectManager.LoadBeatmap(beatmap);
 
             catchObjectManager.CalculateJumps(catchObjects, beatmap);
+
+            var issueObjects = new List<CatchHitObject>();
 
             foreach (var currentObject in catchObjects
                 .Where(currentObject => currentObject.type != HitObject.Type.Spinner && !currentObject.IsHyperDash))
             {
-                if (currentObject.Extras == null)
+                var hyperDistance = Math.Floor(currentObject.DistanceToHyperDash);
+
+                if (hyperDistance >= 1)
                 {
-                    if ((int) Math.Round(currentObject.DistanceToHyperDash) < 1) continue;
+                    issueObjects.Add(currentObject);
+                }
 
-                    if (currentObject.DistanceToHyperDash < 5)
+                if (currentObject.Extras == null) continue;
+
+                foreach (var currentObjectExtra in currentObject.Extras)
+                {
+                    var extraHyperDistance = Math.Floor(currentObjectExtra.DistanceToHyperDash);
+
+                    if (!currentObjectExtra.IsHyperDash && extraHyperDistance >= 1)
                     {
-                        yield return EdgeDashIssue(GetTemplate(EdgeDash), beatmap, currentObject, Beatmap.Difficulty.Insane);
-
-                        yield return EdgeDashIssue(GetTemplate(EdgeDashMinor), beatmap, currentObject, Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra);
-                    }
-
-                    if (currentObject.DistanceToHyperDash < 10)
-                    {
-                        yield return EdgeDashIssue(GetTemplate(EdgeDashProblem), beatmap, currentObject, Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard);
+                        issueObjects.Add(currentObjectExtra);
                     }
                 }
-                else
+
+                
+            }
+
+            foreach (var issueObject in issueObjects)
+            {
+                if (issueObject.DistanceToHyperDash < 5)
                 {
-                    foreach (var sliderPart in currentObject.Extras
-                        .Where(sliderPart => !sliderPart.IsHyperDash && !((int) Math.Round(sliderPart.DistanceToHyperDash) < 1)))
-                    {
-                        if (sliderPart.DistanceToHyperDash < 5)
-                        {
-                            yield return EdgeDashIssue(GetTemplate(EdgeDash), beatmap, sliderPart, Beatmap.Difficulty.Insane);
+                    yield return EdgeDashIssue(GetTemplate(EdgeDash), beatmap, issueObject, Beatmap.Difficulty.Insane);
 
-                            yield return EdgeDashIssue(GetTemplate(EdgeDashMinor), beatmap, sliderPart, Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra);
-                        }
+                    yield return EdgeDashIssue(GetTemplate(EdgeDashMinor), beatmap, issueObject, Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra);
+                }
 
-                        if (sliderPart.DistanceToHyperDash < 10)
-                        {
-                            yield return EdgeDashIssue(GetTemplate(EdgeDashProblem), beatmap, sliderPart, Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard);
-                        }
-                    }
+                if (issueObject.DistanceToHyperDash < 10)
+                {
+                    yield return EdgeDashIssue(GetTemplate(EdgeDashProblem), beatmap, issueObject, Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard);
                 }
             }
         }

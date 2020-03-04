@@ -9,9 +9,7 @@ namespace MapsetChecksCatch.helper
 {
     public class ObjectManager
     {
-        public List<CatchHitObject> Objects;
-
-        public ObjectManager(Beatmap beatmap)
+        public List<CatchHitObject> LoadBeatmap(Beatmap beatmap)
         {
             var mapObjects = beatmap.hitObjects;
             var objects = new List<CatchHitObject>();
@@ -21,37 +19,54 @@ namespace MapsetChecksCatch.helper
                 var objectExtras = new List<CatchHitObject>();
                 var objectCode = mapSliderObject.code.Split(',');
 
-                var sliderObject = new CatchHitObject(objectCode, beatmap);
+                var sliderObject = new CatchHitObject(objectCode, beatmap, CatchType.CIRCLE);
 
                 // Slider ticks
-                objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, mapSliderObject.sliderTickTimes, objectCode));
+                objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, mapSliderObject.sliderTickTimes, objectCode, CatchType.DROPLET));
 
                 // Slider repeats and tail
-                objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, GetEdgeTimes(mapSliderObject), objectCode));
+                objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, GetEdgeTimes(mapSliderObject), objectCode, CatchType.CIRCLE));
 
-                sliderObject.Extras = objectExtras;
+                objectExtras.Sort((h1, h2) => h1.time.CompareTo(h2.time));
+
+                sliderObject.Extras = objectExtras; 
                 objects.Add(sliderObject);
             }
 
             objects.AddRange(
                 from mapObject in mapObjects
-                where !(mapObject is Slider)
-                select new CatchHitObject(mapObject.code.Split(','), beatmap)
+                where mapObject is Circle
+                select new CatchHitObject(mapObject.code.Split(','), beatmap, CatchType.CIRCLE)
             );
 
             objects.Sort((h1, h2) => h1.time.CompareTo(h2.time));
 
+            return objects;
+        }
+
+        public void LoadOrigins(List<CatchHitObject> mapObjects)
+        {
+            CatchHitObject lastObject = null;
+
             // Set object origin before we return everything
-            for (var i = 0; i < objects.Count; i++)
+            foreach (var currentObject in mapObjects)
             {
-                if (i != 0)
+                if (lastObject == null)
                 {
-                    objects[i].Origin = objects[i - 1];
+                    lastObject = currentObject;
+                    continue;
+                }
+
+                currentObject.Origin = lastObject;
+
+                lastObject = currentObject;
+
+                foreach (var extraHitObject in currentObject.Extras)
+                {
+                    extraHitObject.Origin = lastObject;
+                    lastObject = extraHitObject;
                 }
             }
-
-            Objects = objects;
-            //beatmap.hitObjects = new List<HitObject>(objects);
         }
 
         private static IEnumerable<double> GetEdgeTimes(Slider sObject)
@@ -60,18 +75,19 @@ namespace MapsetChecksCatch.helper
                 yield return sObject.time + sObject.GetCurveDuration() * (i + 1);
         }
 
-        private static IEnumerable<CatchHitObject> CreateObjectExtra(Beatmap beatmap, Slider slider, IEnumerable<double> times, string[] objectCode)
+        private static IEnumerable<CatchHitObject> CreateObjectExtra(Beatmap beatmap, Slider slider, IEnumerable<double> times, string[] objectCode, CatchType type)
         {
             foreach (var time in times)
             {
                 objectCode[0] = Math.Round(slider.GetPathPosition(time).X)
                     .ToString(CultureInfo.InvariantCulture);
                 objectCode[2] = time.ToString(CultureInfo.InvariantCulture);
-                yield return new CatchHitObject(objectCode, beatmap);
+                var line = string.Join(",", objectCode);
+                yield return new CatchHitObject(line.Split(','), beatmap, type);
             }
         }
 
-        public void CalculateJumps(List<CatchHitObject> mapObjects, Beatmap aBeatmap)
+        public void CalculateJumps(List<CatchHitObject> mapObjects, Beatmap beatmap)
         {
             var objectWithDroplets = new List<CatchHitObject>();
 
@@ -94,7 +110,7 @@ namespace MapsetChecksCatch.helper
 
             // Taken from Modding Assistant as osu-lazer seems broken
             // https://github.com/rorre/decompiled-MA/blob/master/Modding%20assistant/osu/DiffCalc/BeatmapDifficultyCalculatorFruits.cs
-            var adjustDiff = (aBeatmap.difficultySettings.circleSize - 5.0) / 5.0;
+            var adjustDiff = (beatmap.difficultySettings.circleSize - 5.0) / 5.0;
             var catcherWidth = (float) (64 * (1.0 - 0.7 * adjustDiff)) / 128f;
             var num2 = 305f * catcherWidth * 0.7f;
             var halfCatcherWidth = num2 / 2;

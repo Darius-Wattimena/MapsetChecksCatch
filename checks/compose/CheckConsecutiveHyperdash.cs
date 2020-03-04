@@ -82,10 +82,11 @@ namespace MapsetChecksCatch.checks.compose
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
-            var catchObjectManager = new ObjectManager(beatmap);
-            var catchObjects = catchObjectManager.Objects;
+            var catchObjectManager = new ObjectManager();
+            var catchObjects = catchObjectManager.LoadBeatmap(beatmap);
 
             catchObjectManager.CalculateJumps(catchObjects, beatmap);
+
             var count = 0;
             CatchHitObject firstHyperdash = null;
             CatchHitObject lastObject = null;
@@ -100,7 +101,7 @@ namespace MapsetChecksCatch.checks.compose
                         var time = Math.Abs(currentObject.GetPrevDeltaTime());
 
                         //TODO recognize normal dashes
-                        if ((originTime > time + 5 || originTime < time - 5) && currentObject.Origin.IsHyperDash)
+                        if ((originTime > time + 5 || originTime < time - 5) && lastObject.IsHyperDash)
                         {
                             yield return new Issue(
                                 GetTemplate(ConsecutivePlatterSnap),

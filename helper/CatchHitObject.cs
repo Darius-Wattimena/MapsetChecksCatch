@@ -5,9 +5,10 @@ namespace MapsetChecksCatch.helper
 {
     public sealed class CatchHitObject : HitObject
     {
-        public CatchHitObject(string[] anArgs, Beatmap beatmap) : base(anArgs, beatmap)
+        public CatchHitObject(string[] anArgs, Beatmap beatmap, CatchType type) : base(anArgs, beatmap)
         {
             X = Position.X;
+            CatchType = type;
         }
 
         public float X;
@@ -17,7 +18,8 @@ namespace MapsetChecksCatch.helper
         public bool IsWalkable { get; set; } = true;
         public CatchHitObject HyperDashTarget { get; set; }
         public CatchHitObject Origin { get; set; }
-        public List<CatchHitObject> Extras { get; set; }
+        public List<CatchHitObject> Extras { get; set; } = new List<CatchHitObject>();
+        public CatchType CatchType { get; set; }
 
         /**
          * Check if the current object is hypersnapped taking the current objects start point and the end point of the last object.
@@ -40,5 +42,14 @@ namespace MapsetChecksCatch.helper
                 _ => false
             };
         }
+    }
+
+    public enum CatchType
+    {
+        CIRCLE,
+        HEAD,
+        REPEAT,
+        TAIL,
+        DROPLET
     }
 }
