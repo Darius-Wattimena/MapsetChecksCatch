@@ -6,9 +6,6 @@
 
         public const string CATEGORY_COMPOSE = "Compose";
         public const string CATEGORY_SETTINGS = "Settings";
-
-        public const float CATCHER_SPEED = 512;
-        public const float CATCHER_WALK_SPEED = CATCHER_SPEED / 2;
     }
 
     public enum Luminosity

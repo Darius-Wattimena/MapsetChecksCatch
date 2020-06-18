@@ -23,6 +23,7 @@ namespace MapsetChecksCatch.checks.compose
         {
             Category = Settings.CATEGORY_COMPOSE,
             Message = "Too many consecutive hyperdashes.",
+            Difficulties = new [] { Beatmap.Difficulty.Hard, Beatmap.Difficulty.Insane },
             Modes = new[] {Beatmap.Mode.Catch},
             Author = Settings.AUTHOR,
 
@@ -38,7 +39,7 @@ namespace MapsetChecksCatch.checks.compose
                     <b>Rain</b> : 
                     Basic hyperdashes must not be used more than four times between consecutive fruits. 
                     If higher-snapped hyperdashes are used, they must not be used in conjunction with other hyperdashes or higher-snapped dashes.
-                    </br>
+                    <br/>
                     <b>Platter</b> : 
                     Basic hyperdashes must not be used more than two times between consecutive fruits. 
                     If higher-snapped hyperdashes are used, they must be used singularly (not in conjunction with other hyperdashes or dashes)."
@@ -80,20 +81,45 @@ namespace MapsetChecksCatch.checks.compose
             };
         }
 
+        public IEnumerable<Issue> GetConsecutiveHyperdashIssues(Beatmap beatmap, int count, CatchHitObject lastObject)
+        {
+            if (count > ThresholdPlatter)
+            {
+                yield return new Issue(
+                    GetTemplate(Consecutive),
+                    beatmap,
+                    Timestamp.Get(lastObject.time),
+                    ThresholdPlatter,
+                    count
+                ).ForDifficulties(Beatmap.Difficulty.Hard);
+            }
+
+            if (count > ThresholdRain)
+            {
+                yield return new Issue(
+                    GetTemplate(Consecutive),
+                    beatmap,
+                    Timestamp.Get(lastObject.time),
+                    ThresholdRain,
+                    count
+                ).ForDifficulties(Beatmap.Difficulty.Insane);
+            }
+        }
+
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
             var catchObjectManager = new ObjectManager();
-            var catchObjects = catchObjectManager.LoadBeatmap(beatmap);
-
+            var catchObjects = catchObjectManager.LoadBeatmap(beatmap); 
+            
             catchObjectManager.CalculateJumps(catchObjects, beatmap);
 
             var count = 0;
-            CatchHitObject firstHyperdash = null;
             CatchHitObject lastObject = null;
             var nextMustBeSameSnap = false;
+            var issues = new List<Issue>();
             foreach (var currentObject in catchObjects)
             {
-                if (nextMustBeSameSnap)
+                if (nextMustBeSameSnap && lastObject != null)
                 {
                     if (lastObject.Extras == null)
                     {
@@ -121,7 +147,7 @@ namespace MapsetChecksCatch.checks.compose
                 }
 
                 // Check if we came from a hyperdash
-                if (firstHyperdash != null)
+                if (lastObject != null)
                 {
                     // Check if it was highersnapped for platter/rain rule
                     if (currentObject.IsHigherSnapped(Beatmap.Difficulty.Hard, lastObject.IsHyperDash)
@@ -135,40 +161,28 @@ namespace MapsetChecksCatch.checks.compose
                 {
                     count++;
                     lastObject = currentObject;
+                }
+                else
+                {
+                    issues.AddRange(GetConsecutiveHyperdashIssues(beatmap, count, lastObject));
+                    lastObject = null;
+                    count = 0;
+                }
 
-                    if (firstHyperdash == null)
+                foreach (var currentObjectExtra in currentObject.Extras)
+                {
+                    if (currentObjectExtra.IsHyperDash)
                     {
-                        firstHyperdash = currentObject;
+                        count++;
+                        lastObject = currentObject;
                     }
-
-                    continue;
+                    else
+                    {
+                        issues.AddRange(GetConsecutiveHyperdashIssues(beatmap, count, lastObject));
+                        lastObject = null;
+                        count = 0;
+                    }
                 }
-
-                // No more hdashes check
-                if (count > ThresholdPlatter)
-                {
-                    yield return new Issue(
-                        GetTemplate(Consecutive),
-                        beatmap,
-                        Timestamp.Get(lastObject.time),
-                        ThresholdPlatter,
-                        count
-                    ).ForDifficulties(Beatmap.Difficulty.Hard);
-                }
-
-                if (count > ThresholdRain)
-                {
-                    yield return new Issue(
-                        GetTemplate(Consecutive),
-                        beatmap,
-                        Timestamp.Get(lastObject.time),
-                        ThresholdRain,
-                        count
-                    ).ForDifficulties(Beatmap.Difficulty.Insane);
-                }
-
-                count = 0;
-                firstHyperdash = null;
             }
         }
     }

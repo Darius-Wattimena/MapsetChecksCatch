@@ -47,34 +47,29 @@ namespace MapsetChecksCatch.checks.settings
                 {
                     ComboColoursLow,
                     new IssueTemplate(Issue.Level.Minor,
-                            "Combo {0} uses a low luminosity value, recommend to use a value above ~70.",
-                            "combo")
+                            "Combo {0} uses a low luminosity value, recommend to use a value above ~70. Current {1}",
+                            "combo", "temp")
                         .WithCause("Luminosity is around or lower then ~50.")
                 },
                 {
                     ComboColoursHigh,
                     new IssueTemplate(Issue.Level.Minor,
-                            "Combo {0} uses a high luminosity value, recommend to use a value below ~200.",
-                            "combo")
+                            "Combo {0} uses a high luminosity value, recommend to use a value below ~200. Current {1}",
+                            "combo", "temp")
                         .WithCause("Luminosity is around or higher then ~220.")
                 }
             };
         }
 
         // FIXME: Osu does something else here although doing luminosity * 240 does seem to be pretty close
-        public double GetLuminosity(float R, float G, float B)
+        public double GetLuminosity(float r, float g, float b)
         {
-            var r = R / 255;
-            var g = G / 255;
-            var b = B / 255;
-
-
             var max = Math.Max(r, Math.Max(g, b));
             var min = Math.Min(r, Math.Min(g, b));
 
-            var luminosity = (max + min) * 0.5;
+            var luminosity = 240 - Math.Round((max - min) * (120f/255f));
 
-            return luminosity * 240;
+            return luminosity;
         }
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
@@ -89,7 +84,8 @@ namespace MapsetChecksCatch.checks.settings
                 {
                     yield return new Issue(GetTemplate(ComboColoursLow),
                         beatmap,
-                        i + 1
+                        i + 1,
+                        luminosity
                     );
                 }
 
@@ -97,7 +93,8 @@ namespace MapsetChecksCatch.checks.settings
                 {
                     yield return new Issue(GetTemplate(ComboColoursHigh),
                         beatmap,
-                        i + 1
+                        i + 1,
+                        luminosity
                     );
                 }
             }

@@ -130,7 +130,7 @@ namespace MapsetChecksCatch.helper
                     1000f / 60f / 4; // 1/4th of a frame of grace time, taken from osu-stable
                 var xDistance = Math.Abs(nextObject.X - currentObject.X);
                 var distanceToNext = xDistance - (lastDirection == thisDirection ? lastExcess : halfCatcherWidth);
-                var distanceToHyper = (float) (timeToNext - distanceToNext);
+                var distanceToHyper = timeToNext - distanceToNext;
 
                 if (distanceToHyper < 0)
                 {

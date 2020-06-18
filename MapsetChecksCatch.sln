@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapsetChecksCatch", "MapsetChecksCatch.csproj", "{FEAB022E-930C-4D3B-AFB7-0A7BB233A5AA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FEAB022E-930C-4D3B-AFB7-0A7BB233A5AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEAB022E-930C-4D3B-AFB7-0A7BB233A5AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEAB022E-930C-4D3B-AFB7-0A7BB233A5AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEAB022E-930C-4D3B-AFB7-0A7BB233A5AA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CBAA6908-5FFF-4A25-9A39-D98E04E4EA40}
+	EndGlobalSection
+EndGlobal

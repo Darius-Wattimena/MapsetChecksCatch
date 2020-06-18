@@ -78,7 +78,7 @@ namespace MapsetChecksCatch.checks.compose
                 template,
                 beatmap,
                 Timestamp.Get(currentObject.time),
-                $"{Math.Floor(currentObject.DistanceToHyperDash)}"
+                $"{currentObject.DistanceToHyperDash}"
             ).ForDifficulties(difficulties);
         }
 
@@ -94,9 +94,9 @@ namespace MapsetChecksCatch.checks.compose
             foreach (var currentObject in catchObjects
                 .Where(currentObject => currentObject.type != HitObject.Type.Spinner && !currentObject.IsHyperDash))
             {
-                var hyperDistance = Math.Floor(currentObject.DistanceToHyperDash);
+                var hyperDistance = currentObject.DistanceToHyperDash;
 
-                if (hyperDistance >= 1)
+                if (hyperDistance >= 0.1)
                 {
                     issueObjects.Add(currentObject);
                 }
@@ -105,9 +105,9 @@ namespace MapsetChecksCatch.checks.compose
 
                 foreach (var currentObjectExtra in currentObject.Extras)
                 {
-                    var extraHyperDistance = Math.Floor(currentObjectExtra.DistanceToHyperDash);
+                    var extraHyperDistance = currentObjectExtra.DistanceToHyperDash;
 
-                    if (!currentObjectExtra.IsHyperDash && extraHyperDistance >= 1)
+                    if (!currentObjectExtra.IsHyperDash && extraHyperDistance >= 0.1)
                     {
                         issueObjects.Add(currentObjectExtra);
                     }
