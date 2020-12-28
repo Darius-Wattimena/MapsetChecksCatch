@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using MapsetChecksCatch.helper;
-using MapsetParser.objects;
-using MapsetVerifierFramework.objects;
-using MapsetVerifierFramework.objects.metadata;
-
-namespace MapsetChecksCatch.checks
+﻿namespace MapsetChecksCatch.checks
 {
     /*class CatchBeatmapCheck : BeatmapCheck
     {
