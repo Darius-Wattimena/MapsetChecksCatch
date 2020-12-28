@@ -73,11 +73,11 @@ namespace MapsetChecksCatch.checks.compose
                 yield break;
             }
 
-            var catchObjectManager = new ObjectManager();
-            var catchObjects = catchObjectManager.LoadBeatmap(beatmap);
-            catchObjectManager.LoadOrigins(catchObjects);
+            var catchObjectManager = ObjectManagerSingleton.Instance.GetBeatmapObjectManager(beatmap);
+            var catchObjects = catchObjectManager.Objects;
+            /*catchObjectManager.LoadOrigins(catchObjects);
 
-            catchObjectManager.CalculateJumps(catchObjects, beatmap);
+            catchObjectManager.CalculateJumps(catchObjects, beatmap);*/
 
             foreach (var currentObject in catchObjects)
             {

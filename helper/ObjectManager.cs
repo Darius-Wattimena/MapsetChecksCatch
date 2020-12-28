@@ -1,15 +1,51 @@
 ﻿using MapsetParser.objects;
 using MapsetParser.objects.hitobjects;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
 namespace MapsetChecksCatch.helper
 {
+    public class ObjectManagerSingleton
+    {
+        private static readonly Lazy<ObjectManagerSingleton> LazyObjectManager = new Lazy<ObjectManagerSingleton>(() => new ObjectManagerSingleton());
+        public static ObjectManagerSingleton Instance => LazyObjectManager.Value;
+
+        private readonly ConcurrentDictionary<string, ObjectManager> _dictionary = new ConcurrentDictionary<string, ObjectManager>();
+
+        public ObjectManager GetBeatmapObjectManager(Beatmap beatmap)
+        {
+            var key = beatmap.metadataSettings.beatmapSetId + ":" + beatmap.metadataSettings.beatmapId;
+
+            if (_dictionary.TryGetValue(key, out var manager))
+            {
+                return manager;
+            }
+            else
+            {
+                manager = new ObjectManager(beatmap);
+
+                _dictionary.TryAdd(key, manager);
+
+                return manager;
+            }
+        }
+    }
+
     public class ObjectManager
     {
-        public List<CatchHitObject> LoadBeatmap(Beatmap beatmap)
+        public readonly List<CatchHitObject> Objects;
+
+        public ObjectManager(Beatmap beatmap)
+        {
+            Objects = LoadBeatmap(beatmap);
+            LoadOrigins(Objects);
+            CalculateJumps(Objects, beatmap);
+        }
+
+        private List<CatchHitObject> LoadBeatmap(Beatmap beatmap)
         {
             var mapObjects = beatmap.hitObjects;
             var objects = new List<CatchHitObject>();
@@ -44,7 +80,7 @@ namespace MapsetChecksCatch.helper
             return objects;
         }
 
-        public void LoadOrigins(List<CatchHitObject> mapObjects)
+        private void LoadOrigins(List<CatchHitObject> mapObjects)
         {
             CatchHitObject lastObject = null;
 
@@ -87,7 +123,7 @@ namespace MapsetChecksCatch.helper
             }
         }
 
-        public void CalculateJumps(List<CatchHitObject> mapObjects, Beatmap beatmap)
+        private void CalculateJumps(List<CatchHitObject> mapObjects, Beatmap beatmap)
         {
             var objectWithDroplets = new List<CatchHitObject>();
 
@@ -151,7 +187,7 @@ namespace MapsetChecksCatch.helper
         }
 
         // https://github.com/ppy/osuTK/blob/master/src/osuTK/Math/MathHelper.cs#L303
-        public static double Clamp(double n, double min, double max)
+        private static double Clamp(double n, double min, double max)
         {
             return Math.Max(Math.Min(n, max), min);
         }

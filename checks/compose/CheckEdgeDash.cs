@@ -84,10 +84,10 @@ namespace MapsetChecksCatch.checks.compose
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
-            var catchObjectManager = new ObjectManager();
-            var catchObjects = catchObjectManager.LoadBeatmap(beatmap);
+            var catchObjectManager = ObjectManagerSingleton.Instance.GetBeatmapObjectManager(beatmap);
+            var catchObjects = catchObjectManager.Objects;
 
-            catchObjectManager.CalculateJumps(catchObjects, beatmap);
+            //catchObjectManager.CalculateJumps(catchObjects, beatmap);
 
             var issueObjects = new List<CatchHitObject>();
 
