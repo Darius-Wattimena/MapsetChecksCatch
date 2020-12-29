@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
 using MapsetVerifierFramework.objects;
@@ -9,8 +9,10 @@ using MapsetVerifierFramework.objects.metadata;
 namespace MapsetChecksCatch.Checks.General
 {
     [Check]
-    public class CheckBeatmapsDistanceCalculation : GeneralCheck
+    public class CheckBeatmapSetDistanceCalculation : GeneralCheck
     {
+        public static readonly ConcurrentDictionary<string, List<CatchHitObject>> SetBeatmaps = new ConcurrentDictionary<string, List<CatchHitObject>>();
+
         public override CheckMetadata GetMetadata() => new CheckMetadata()
         {
             Category = "Resources",
@@ -39,7 +41,12 @@ namespace MapsetChecksCatch.Checks.General
 
         public override IEnumerable<Issue> GetIssues(BeatmapSet beatmapSet)
         {
-            var processedBeatmaps = beatmapSet.beatmaps.Select(BeatmapDistanceCalculator.Calculate);
+            beatmapSet.beatmaps.ForEach(beatmap =>
+            {
+                var calculatedBeatmap = BeatmapDistanceCalculator.Calculate(beatmap);
+
+                SetBeatmaps.TryAdd(beatmap.metadataSettings.version, calculatedBeatmap);
+            });
 
             yield break;
         }
