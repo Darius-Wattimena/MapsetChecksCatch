@@ -41,10 +41,11 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             return new Dictionary<string, IssueTemplate>
             {
-                {
-                    "HasSpinner",
-                    new IssueTemplate(Issue.Level.Minor, "When possible add a spinner to create fluctuation among scores.")
-                        .WithCause("No spinner has been added.")
+                {"HasSpinner",
+                    new IssueTemplate(Issue.Level.Minor, 
+                            "When possible add a spinner to create fluctuation among scores.")
+                        .WithCause(
+                            "No spinner has been added.")
                 }
             };
         }
