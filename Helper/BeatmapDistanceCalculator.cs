@@ -171,7 +171,7 @@ namespace MapsetChecksCatch.Helper
             metadata.HyperDistanceToNext = metadata.DistanceInOsuCords - (lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
             metadata.DashDistanceToNext = metadata.DistanceInOsuCords - (lastDirection == metadata.Direction ? walkRange : halfCatcherWidth / 2);
             metadata.DistanceToHyper = metadata.TimeToNext - metadata.HyperDistanceToNext;
-            metadata.DistanceToDash = metadata.TimeToNext - metadata.DashDistanceToNext;
+            metadata.DistanceToDash = metadata.TimeToNext - metadata.DashDistanceToNext - (metadata.TimeToNext * 0.3);
 
             // Label the type of movement based on if the distance is dashable or walkable
             if (metadata.DistanceToHyper < 0) {

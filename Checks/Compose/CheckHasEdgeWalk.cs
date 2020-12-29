@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
@@ -18,7 +17,7 @@ namespace MapsetChecksCatch.Checks.Compose
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Edge walks.",
+            Message = "Too strong walks.",
             Modes = new[] { Beatmap.Mode.Catch },
             Author = "Greaper",
 
@@ -27,17 +26,12 @@ namespace MapsetChecksCatch.Checks.Compose
                 {
                     "Purpose",
                     @"
-                    Edge dashes are hard and shouldn't be used on lower difficulties. 
-                    They can be used on Rains and Overdoses, although if they are used they mush be used properly."
+                    Too strong walks are quite harsh and are most of the time unintentionally placed on a lower difficulty."
                 },
                 {
                     "Reasoning",
                     @"
-                    Edge dashes require precise movement, on lower difficulties we cannot expect such accuracy from players.
-                    </br>
-                    On Rains edge dashes may only be used singularly. 
-                    </br>
-                    On Overdose they may be used with caution for a maximum of three consecutive objects, and should not be used after hyperdashes."
+                    Too strong walks require fast reaction speed, newer players don't have this and will instead tap dash this distance."
                 }
             }
         };
@@ -46,30 +40,22 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             return new Dictionary<string, IssueTemplate>
             {
-                { "EdgeWalkMinor",
-                    new IssueTemplate(Issue.Level.Minor,
-                            "{0} This object is {1} pixel(s) away from being a dash, make sure this is intended.",
-                            "timestamp - ", "x")
-                        .WithCause(
-                            "X amount of pixels off to become a dash.")
-                },
                 { "EdgeWalk",
-                    new IssueTemplate(Issue.Level.Warning,
-                            "{0} This object is {1} pixel(s) away from being a dash, this should be avoided if possible.",
-                            "timestamp - ", "x")
+                    new IssueTemplate(Issue.Level.Minor,
+                            "{0} This object can be seen as a harsh walk and might be seen as ambiguous, consider to reduce.",
+                            "timestamp - ")
                         .WithCause(
-                            "X amount of pixels off to become a dash.")
+                            "A too strong walk is provided")
                 }
             };
         }
 
-        private static Issue EdgeDashIssue(IssueTemplate template, Beatmap beatmap, CatchHitObject currentObject, params Beatmap.Difficulty[] difficulties)
+        private static Issue EdgeWalkIssue(IssueTemplate template, Beatmap beatmap, CatchHitObject currentObject, params Beatmap.Difficulty[] difficulties)
         {
             return new Issue(
                 template,
                 beatmap,
-                Timestamp.Get(currentObject.time),
-                $"{Math.Round(currentObject.DistanceToDash)}"
+                Timestamp.Get(currentObject.time)
             ).ForDifficulties(difficulties);
         }
 
@@ -91,29 +77,23 @@ namespace MapsetChecksCatch.Checks.Compose
 
                 if (currentObject.Extras == null) continue;
 
-                foreach (var sliderExtras in currentObject.Extras)
+                foreach (var sliderExtra in currentObject.Extras)
                 {
-                    var sliderObjectDashDistance = sliderExtras.DistanceToDash;
+                    var sliderObjectDashDistance = sliderExtra.DistanceToDash;
 
-                    if (sliderExtras.MovementType != MovementType.DASH && sliderObjectDashDistance > 0)
+                    if (sliderExtra.MovementType != MovementType.DASH && sliderObjectDashDistance > 0)
                     {
-                        issueObjects.Add(sliderExtras);
+                        issueObjects.Add(sliderExtra);
                     }
                 }
             }
 
             foreach (var issueObject in issueObjects)
             {
-                if (issueObject.DistanceToDash < 5)
+                if (issueObject.DistanceToDash < 20)
                 {
-                    yield return EdgeDashIssue(GetTemplate("EdgeWalkMinor"), beatmap, issueObject,
-                        Beatmap.Difficulty.Hard);
-                }
-
-                if (issueObject.DistanceToDash < 10)
-                {
-                    yield return EdgeDashIssue(GetTemplate("EdgeWalk"), beatmap, issueObject,
-                        Beatmap.Difficulty.Easy, Beatmap.Difficulty.Normal);
+                    yield return EdgeWalkIssue(GetTemplate("EdgeWalk"), beatmap, issueObject,
+                        Beatmap.Difficulty.Easy, Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard);
                 }
             }
         }
