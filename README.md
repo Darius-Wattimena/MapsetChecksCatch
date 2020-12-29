@@ -6,12 +6,14 @@ MapsetChecksCatch is like [MapsetChecks](https://github.com/Naxesss/MapsetChecks
 
 ## Available checks
 **Unrankable checks:**
- - Spinner gap check
  - Edge dashes
  - Consecutive hyperdashes
+ - Consecutive highersnapped hyperdashes
+ - Hyperdash snap
 
 **Minor checks:**
  - Luminosity of combo colour
+ - Strong walk detection for lower diffs
  - Max combo guideline
  - Spinner present
 
@@ -20,7 +22,7 @@ MapsetChecksCatch is like [MapsetChecks](https://github.com/Naxesss/MapsetChecks
  - Dashes in Cups
  - Consecutive edge dash usage in Rains/Overdoses
  - Hyperdash of different snap usage on Platters
- - Unallowed snaps on Salad/Platter/Rain
+ - Unallowed dash snaps on Salad/Platter/Rain
  - Difficulty guideline settings
 
 ## How to install
