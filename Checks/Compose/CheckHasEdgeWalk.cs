@@ -42,7 +42,7 @@ namespace MapsetChecksCatch.Checks.Compose
             {
                 { "EdgeWalk",
                     new IssueTemplate(Issue.Level.Minor,
-                            "{0} This object can be seen as a harsh walk and might be seen as ambiguous, consider to reduce.",
+                            "{0} This object is a harsh walk and might be seen as ambiguous, consider reducing it.",
                             "timestamp - ")
                         .WithCause(
                             "A too strong walk is provided")

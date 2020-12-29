@@ -61,14 +61,7 @@ namespace MapsetChecksCatch.Checks.Compose
                         .WithCause(
                             "Too many consecutive hyperdash are used.")
                 },
-                { "ConsecutivePlatterSnap",
-                    new IssueTemplate(Issue.Level.Problem,
-                            "{0} A highersnapped hyperdash followed by a different snapped hyperdash.",
-                            "timestamp - ")
-                        .WithCause(
-                            "Higher snapped hyperdash followed by a different snapped hyperdash.")
-                },
-                { "ConsecutiveRainSnap",
+                { "ConsecutiveHigherSnap",
                     new IssueTemplate(Issue.Level.Problem,
                             "{0} A highersnapped hyperdash followed by a different snapped hyperdash.",
                             "timestamp - ")
@@ -125,13 +118,13 @@ namespace MapsetChecksCatch.Checks.Compose
                             && lastObject.MovementType == MovementType.HYPERDASH && currentObject.MovementType == MovementType.HYPERDASH)
                         {
                             yield return new Issue(
-                                GetTemplate("ConsecutivePlatterSnap"),
+                                GetTemplate("ConsecutiveHigherSnap"),
                                 beatmap,
                                 Timestamp.Get(currentObject.time)
                             ).ForDifficulties(Beatmap.Difficulty.Hard);
 
                             yield return new Issue(
-                                GetTemplate("ConsecutiveRainSnap"),
+                                GetTemplate("ConsecutiveHigherSnap"),
                                 beatmap,
                                 Timestamp.Get(currentObject.time)
                             ).ForDifficulties(Beatmap.Difficulty.Insane);
