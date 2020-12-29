@@ -118,13 +118,14 @@ namespace MapsetChecksCatch.Helper
             var halfCatcherWidth = catcherWidth / 2;
             var lastDirection = NoteDirection.NONE;
             double dashRange = halfCatcherWidth;
+            double walkRange = halfCatcherWidth / 2;
 
             for (var i = 0; i < allObjects.Count - 1; i++)
             {
                 var currentObject = allObjects[i];
                 var nextObject = allObjects[i + 1];
 
-                var objectMetadata = GenerateObjectMetadata(currentObject, nextObject, lastDirection, dashRange, halfCatcherWidth);
+                var objectMetadata = GenerateObjectMetadata(currentObject, nextObject, lastDirection, dashRange, walkRange, halfCatcherWidth);
                 currentObject.Origin = currentObject;
                 currentObject.Target = nextObject;
                 currentObject.DistanceToHyperDash = objectMetadata.DistanceToHyper;
@@ -138,6 +139,15 @@ namespace MapsetChecksCatch.Helper
                 else
                 {
                     dashRange = Clamp(objectMetadata.DistanceToHyper, 0, halfCatcherWidth);
+
+                    if (objectMetadata.MovementType == MovementType.DASH)
+                    {
+                        walkRange = halfCatcherWidth / 2;
+                    }
+                    else
+                    {
+                        walkRange = Clamp(objectMetadata.DistanceToDash, 0, halfCatcherWidth / 2);
+                    }
                 }
 
                 lastDirection = objectMetadata.Direction;
@@ -149,6 +159,7 @@ namespace MapsetChecksCatch.Helper
             CatchHitObject next,
             NoteDirection lastDirection, 
             double dashRange, 
+            double walkRange,
             double halfCatcherWidth
         ) {
             var metadata = new ObjectMetadata {
@@ -157,9 +168,10 @@ namespace MapsetChecksCatch.Helper
                 TimeToNext = next.time - current.time - 1000f / 60f / 4,
                 DistanceInOsuCords = Math.Abs(next.X - current.X)
             };
-            metadata.DistanceToNext = metadata.DistanceInOsuCords - (lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
-            metadata.DistanceToHyper = metadata.TimeToNext - metadata.DistanceToNext;
-            metadata.DistanceToDash = metadata.TimeToNext - (metadata.DistanceToNext / 2);
+            metadata.HyperDistanceToNext = metadata.DistanceInOsuCords - (lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
+            metadata.DashDistanceToNext = metadata.DistanceInOsuCords - (lastDirection == metadata.Direction ? walkRange : halfCatcherWidth / 2);
+            metadata.DistanceToHyper = metadata.TimeToNext - metadata.HyperDistanceToNext;
+            metadata.DistanceToDash = metadata.TimeToNext - metadata.DashDistanceToNext;
 
             // Label the type of movement based on if the distance is dashable or walkable
             if (metadata.DistanceToHyper < 0) {

@@ -14,9 +14,14 @@
         public float DistanceInOsuCords { get; set; }
 
         /// <summary>
-        /// Distance based on the osu cords and time
+        /// Distance based on the osu cords and direction
         /// </summary>
-        public double DistanceToNext { get; set; }
+        public double HyperDistanceToNext { get; set; }
+
+        /// <summary>
+        /// Distance based on the osu cords and direction
+        /// </summary>
+        public double DashDistanceToNext { get; set; }
 
         /// <summary>
         /// The amount extra needed distance until a Hyper fruit is generated
