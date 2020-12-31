@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MapsetParser.objects;
 
 namespace MapsetChecksCatch.Helper
@@ -12,13 +13,26 @@ namespace MapsetChecksCatch.Helper
         }
 
         public float X;
-        public double DistanceToHyperDash { get; set; }
-        public double DistanceToDash { get; set; }
+        public int DistanceToHyperDash { get; set; }
+        public int DistanceToDash { get; set; }
         public CatchHitObject Target { get; set; }
         public CatchHitObject Origin { get; set; }
         public List<CatchHitObject> Extras { get; set; } = new List<CatchHitObject>();
         public MovementType MovementType { get; set; }
         public NoteType NoteType { get; set; }
+
+        public string GetNoteTypeName()
+        {
+            return NoteType switch
+            {
+                NoteType.CIRCLE => "Circle",
+                NoteType.HEAD => "Slider Head",
+                NoteType.REPEAT => "Slider Repeat",
+                NoteType.TAIL => "Slider Tail",
+                NoteType.DROPLET => "Droplet",
+                _ => "NULL"
+            };
+        }
     }
 
     public enum NoteType

@@ -45,8 +45,7 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             return new Dictionary<string, IssueTemplate>
             {
-                {
-                    "HyperdashSnap",
+                { "HyperdashSnap",
                     new IssueTemplate(Issue.Level.Problem,
                             "{0} current snap is not allowed, only ticks with at least {1}ms are allowed, currently {2}ms.",
                             "timestamp - ", "allowed", "current")
@@ -80,9 +79,9 @@ namespace MapsetChecksCatch.Checks.Compose
 
                 if (lastCheckedObject.MovementType == MovementType.HYPERDASH)
                 {
-                    var snap = Math.Round(currentObject.time - lastCheckedObject.time);
+                    var snap = (int) (currentObject.time - lastCheckedObject.time);
 
-                    if (snap < 125)
+                    if (snap < 125 && snap > 0)
                     {
                         yield return new Issue(
                             GetTemplate("HyperdashSnap"),
@@ -93,7 +92,7 @@ namespace MapsetChecksCatch.Checks.Compose
                         ).ForDifficulties(Beatmap.Difficulty.Hard);
                     }
 
-                    if (snap < 62)
+                    if (snap < 62 && snap > 0)
                     {
                         yield return new Issue(
                             GetTemplate("HyperdashSnap"),
@@ -112,9 +111,9 @@ namespace MapsetChecksCatch.Checks.Compose
                 {
                     if (lastCheckedObject.MovementType == MovementType.HYPERDASH)
                     {
-                        var snap = Math.Round(sliderObjectExtra.time - lastCheckedObject.time);
+                        var snap = (int) (sliderObjectExtra.time - lastCheckedObject.time);
 
-                        if (snap < 62)
+                        if (snap < 62 && snap > 0)
                         {
                             yield return new Issue(
                                 GetTemplate("HyperdashSnap"),

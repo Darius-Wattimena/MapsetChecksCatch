@@ -30,9 +30,6 @@ namespace MapsetChecksCatch.Helper
                 // The first object of a slider is always its head
                 var sliderObject = new CatchHitObject(objectCode, beatmap, NoteType.HEAD);
 
-                // Slider ticks
-                objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, mapSliderObject.sliderTickTimes, objectCode, NoteType.DROPLET));
-
                 var edgeTimes = GetEdgeTimes(mapSliderObject).ToList();
 
                 if (edgeTimes.Count == 1)
@@ -52,6 +49,17 @@ namespace MapsetChecksCatch.Helper
                     objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, lastObjectArray, objectCode, NoteType.TAIL));
                 }
 
+                foreach (var sliderTick in mapSliderObject.sliderTickTimes)
+                {
+                    // Only add a slider tick to the objects extra if not present yet
+                    if (objectExtras.Any(x => x.time.Equals(sliderTick)))
+                    {
+                        continue;
+                    }
+
+                    objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, new [] { sliderTick }, objectCode, NoteType.DROPLET));
+                }
+
                 objectExtras.Sort((h1, h2) => h1.time.CompareTo(h2.time));
 
                 sliderObject.Extras = objectExtras;
@@ -65,9 +73,24 @@ namespace MapsetChecksCatch.Helper
                 select new CatchHitObject(mapObject.code.Split(','), beatmap, NoteType.CIRCLE)
             );
 
+            
+
             objects.Sort((h1, h2) => h1.time.CompareTo(h2.time));
 
-            return objects;
+            return new HashSet<CatchHitObject>(objects, new TimeComparer()).ToList();
+        }
+
+        private class TimeComparer : IEqualityComparer<CatchHitObject>
+        {
+            public bool Equals(CatchHitObject x, CatchHitObject y)
+            {
+                return x.time == y.time;
+            }
+
+            public int GetHashCode(CatchHitObject obj)
+            {
+                return (obj.time).GetHashCode();
+            }
         }
 
         private static IEnumerable<double> GetEdgeTimes(Slider sObject)
@@ -170,8 +193,8 @@ namespace MapsetChecksCatch.Helper
             };
             metadata.HyperDistanceToNext = metadata.DistanceInOsuCords - (lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
             metadata.DashDistanceToNext = metadata.DistanceInOsuCords - (lastDirection == metadata.Direction ? walkRange : halfCatcherWidth / 2);
-            metadata.DistanceToHyper = metadata.TimeToNext - metadata.HyperDistanceToNext;
-            metadata.DistanceToDash = metadata.TimeToNext - metadata.DashDistanceToNext - (metadata.TimeToNext * 0.3);
+            metadata.DistanceToHyper = (int) (metadata.TimeToNext - metadata.HyperDistanceToNext);
+            metadata.DistanceToDash = (int) (metadata.TimeToNext - metadata.DashDistanceToNext - (metadata.TimeToNext * 0.3));
 
             // Label the type of movement based on if the distance is dashable or walkable
             if (metadata.DistanceToHyper < 0) {

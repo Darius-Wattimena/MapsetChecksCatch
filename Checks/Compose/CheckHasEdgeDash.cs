@@ -48,22 +48,22 @@ namespace MapsetChecksCatch.Checks.Compose
             {
                 { "EdgeDashMinor",
                     new IssueTemplate(Issue.Level.Minor,
-                            "{0} This object is {1} pixel(s) away from being a hyper, make sure this is intended.",
-                            "timestamp - ", "x")
+                            "{0} {1} is {2} pixel(s) away from being a hyper, make sure this is intended.",
+                            "timestamp - ", "object", "x")
                         .WithCause(
                             "X amount of pixels off to become a hyperdash.")
                 },
                 { "EdgeDash",
                     new IssueTemplate(Issue.Level.Warning,
-                            "{0} This object is {1} pixel(s) away from being a hyper, make sure this is used properly.",
-                            "timestamp - ", "x")
+                            "{0} {1} is {2} pixel(s) away from being a hyper, make sure this is used properly.",
+                            "timestamp - ", "object", "x")
                         .WithCause(
                             "X amount of pixels off to become a hyperdash.")
                 },
                 { "EdgeDashProblem",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} This object is {1} pixel(s) away from being a hyper.",
-                            "timestamp - ", "x")
+                            "{0} {1} is {2} pixel(s) away from being a hyper.",
+                            "timestamp - ", "object", "x")
                         .WithCause(
                             "Usage of edge dashes on lower diffs.")
                 }
@@ -76,7 +76,8 @@ namespace MapsetChecksCatch.Checks.Compose
                 template,
                 beatmap,
                 Timestamp.Get(currentObject.time),
-                $"{Math.Round(currentObject.DistanceToHyperDash)}"
+                currentObject.GetNoteTypeName(),
+                $"{currentObject.DistanceToHyperDash}"
             ).ForDifficulties(difficulties);
         }
 
@@ -86,8 +87,7 @@ namespace MapsetChecksCatch.Checks.Compose
 
             var issueObjects = new List<CatchHitObject>();
 
-            foreach (var currentObject in catchObjects
-                .Where(currentObject => currentObject.type != HitObject.Type.Spinner && currentObject.MovementType != MovementType.HYPERDASH))
+            foreach (var currentObject in catchObjects)
             {
                 var hyperDistance = currentObject.DistanceToHyperDash;
 
@@ -100,9 +100,7 @@ namespace MapsetChecksCatch.Checks.Compose
 
                 foreach (var sliderExtras in currentObject.Extras)
                 {
-                    var sliderObjectHyperDistance = sliderExtras.DistanceToHyperDash;
-
-                    if (sliderExtras.MovementType != MovementType.HYPERDASH && sliderObjectHyperDistance > 0)
+                    if (sliderExtras.DistanceToHyperDash > 0)
                     {
                         issueObjects.Add(sliderExtras);
                     }
@@ -115,6 +113,11 @@ namespace MapsetChecksCatch.Checks.Compose
                 {
                     yield return EdgeDashIssue(GetTemplate("EdgeDash"), beatmap, issueObject,
                         Beatmap.Difficulty.Insane);
+                    /*if (issueObject.Target.NoteType != NoteType.DROPLET)
+                    {
+                        yield return EdgeDashIssue(GetTemplate("EdgeDash"), beatmap, issueObject,
+                            Beatmap.Difficulty.Insane);
+                    }*/
 
                     yield return EdgeDashIssue(GetTemplate("EdgeDashMinor"), beatmap, issueObject,
                         Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra);

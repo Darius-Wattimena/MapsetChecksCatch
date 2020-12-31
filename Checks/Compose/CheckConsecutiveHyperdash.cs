@@ -63,7 +63,7 @@ namespace MapsetChecksCatch.Checks.Compose
                 },
                 { "ConsecutiveHigherSnap",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} A highersnapped hyperdash followed by a different snapped hyperdash.",
+                            "{0} Highersnapped hyperdash followed by a different snapped hyperdash.",
                             "timestamp - ")
                         .WithCause(
                             "Higher snapped hyperdash followed by a different snapped hyperdash.")
@@ -108,10 +108,12 @@ namespace MapsetChecksCatch.Checks.Compose
             {
                 if (nextMustBeSameSnap && lastObject != null)
                 {
-                    if (lastObject.NoteType == NoteType.CIRCLE)
+                    if (lastObject.NoteType == NoteType.CIRCLE || lastObject.NoteType == NoteType.TAIL)
                     {
-                        var lastObjectMsGap = lastObject.time - lastObject.Origin.time;
-                        var currentMsGap = currentObject.time - lastObject.time;
+                        var lastObjectMsGap = (int) (lastObject.time - lastObject.Origin.time);
+                        var currentMsGap = (int) (currentObject.time - lastObject.time);
+
+                        if (lastObjectMsGap == 0 || currentMsGap == 0) continue;
 
                         // add + 5 or - 5 to reduce false positives for ~1 ms wrongly snapped objects
                         if ((lastObjectMsGap > currentMsGap + 5 || lastObjectMsGap < currentMsGap - 5) 
@@ -190,7 +192,7 @@ namespace MapsetChecksCatch.Checks.Compose
 
             return difficulty switch
             {
-                Beatmap.Difficulty.Normal => (ms < 125),
+                Beatmap.Difficulty.Normal => (ms < 250),
                 Beatmap.Difficulty.Hard => (ms < (lastObject.MovementType == MovementType.HYPERDASH ? 250 : 124)),
                 Beatmap.Difficulty.Insane => (ms < (124)),
                 _ => false
