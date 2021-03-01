@@ -45,6 +45,7 @@ namespace MapsetChecksCatch.Checks.General
             {
                 var calculatedBeatmap = BeatmapDistanceCalculator.Calculate(beatmap);
 
+                SetBeatmaps.TryRemove(beatmap.metadataSettings.version, out var catchObjects);
                 SetBeatmaps.TryAdd(beatmap.metadataSettings.version, calculatedBeatmap);
             });
 
