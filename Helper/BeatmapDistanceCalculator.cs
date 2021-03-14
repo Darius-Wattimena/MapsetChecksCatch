@@ -149,11 +149,13 @@ namespace MapsetChecksCatch.Helper
                 var nextObject = allObjects[i + 1];
 
                 var objectMetadata = GenerateObjectMetadata(currentObject, nextObject, lastDirection, dashRange, walkRange, halfCatcherWidth);
-                currentObject.Origin = currentObject;
                 currentObject.Target = nextObject;
                 currentObject.DistanceToHyperDash = objectMetadata.DistanceToHyper;
                 currentObject.DistanceToDash = objectMetadata.DistanceToDash;
                 currentObject.MovementType = objectMetadata.MovementType;
+                
+                // Cast to an int since osu seems to be doing something similar
+                currentObject.TimeToTarget = (int) (nextObject.time - currentObject.time);
 
                 if (objectMetadata.MovementType == MovementType.HYPERDASH)
                 {

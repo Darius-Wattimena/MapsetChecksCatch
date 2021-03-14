@@ -97,8 +97,7 @@ namespace MapsetChecksCatch.Checks.Compose
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
-            var identifier = BeatmapUtil.GetBeatmapIdentifier(beatmap);
-            CheckBeatmapSetDistanceCalculation.SetBeatmaps.TryGetValue(identifier, out var catchObjects);
+            var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
 
             var count = 0;
             CatchHitObject lastObject = null;
@@ -110,8 +109,8 @@ namespace MapsetChecksCatch.Checks.Compose
                 {
                     if (lastObject.NoteType == NoteType.CIRCLE || lastObject.NoteType == NoteType.TAIL)
                     {
-                        var lastObjectMsGap = (int) (lastObject.time - lastObject.Origin.time);
-                        var currentMsGap = (int) (currentObject.time - lastObject.time);
+                        var lastObjectMsGap = lastObject.TimeToTarget;
+                        var currentMsGap = currentObject.TimeToTarget;
 
                         if (lastObjectMsGap == 0 || currentMsGap == 0) continue;
 

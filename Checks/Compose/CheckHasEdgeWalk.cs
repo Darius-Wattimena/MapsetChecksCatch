@@ -60,8 +60,7 @@ namespace MapsetChecksCatch.Checks.Compose
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
-            var identifier = BeatmapUtil.GetBeatmapIdentifier(beatmap);
-            CheckBeatmapSetDistanceCalculation.SetBeatmaps.TryGetValue(identifier, out var catchObjects);
+            var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
 
             var issueObjects = new List<CatchHitObject>();
 

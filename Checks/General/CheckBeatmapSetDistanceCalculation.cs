@@ -11,7 +11,15 @@ namespace MapsetChecksCatch.Checks.General
     [Check]
     public class CheckBeatmapSetDistanceCalculation : GeneralCheck
     {
-        public static readonly ConcurrentDictionary<string, List<CatchHitObject>> SetBeatmaps = new ConcurrentDictionary<string, List<CatchHitObject>>();
+        private static readonly ConcurrentDictionary<string, List<CatchHitObject>> SetBeatmaps = new ConcurrentDictionary<string, List<CatchHitObject>>();
+
+        public static List<CatchHitObject> GetBeatmapDistances(Beatmap beatmap)
+        {
+            var identifier = BeatmapUtil.GetBeatmapIdentifier(beatmap);
+            SetBeatmaps.TryGetValue(identifier, out var catchObjects);
+
+            return catchObjects ?? new List<CatchHitObject>();
+        }
 
         public override CheckMetadata GetMetadata() => new CheckMetadata()
         {
