@@ -44,9 +44,10 @@ namespace MapsetChecksCatch.Checks.General
             beatmapSet.beatmaps.ForEach(beatmap =>
             {
                 var calculatedBeatmap = BeatmapDistanceCalculator.Calculate(beatmap);
+                var beatmapIdentifier = BeatmapUtil.GetBeatmapIdentifier(beatmap);
 
-                SetBeatmaps.TryRemove(beatmap.metadataSettings.version, out var catchObjects);
-                SetBeatmaps.TryAdd(beatmap.metadataSettings.version, calculatedBeatmap);
+                SetBeatmaps.TryRemove(beatmapIdentifier, out _);
+                SetBeatmaps.TryAdd(beatmapIdentifier, calculatedBeatmap);
             });
 
             yield break;
