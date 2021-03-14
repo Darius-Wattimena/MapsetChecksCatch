@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
@@ -141,8 +140,8 @@ namespace MapsetChecksCatch.Checks.Compose
                 if (lastObject != null)
                 {
                     // Check if it was highersnapped for platter/rain rule
-                    if (IsHigherSnapped(Beatmap.Difficulty.Hard, currentObject, lastObject)
-                        || IsHigherSnapped(Beatmap.Difficulty.Insane, currentObject, lastObject))
+                    if (BeatmapUtil.IsHigherSnapped(Beatmap.Difficulty.Hard, currentObject, lastObject)
+                        || BeatmapUtil.IsHigherSnapped(Beatmap.Difficulty.Insane, currentObject, lastObject))
                     {
                         nextMustBeSameSnap = true;
                     }
@@ -175,29 +174,6 @@ namespace MapsetChecksCatch.Checks.Compose
                     }
                 }
             }
-        }
-
-        /**
-         * Check if the current object is hypersnapped taking the current objects start point and the end point of the last object.
-         *
-         * Providing a difficulty level and if the last object was a hyper
-         *
-         * Allowed dash / hyperdash snapping:
-         * Salad = 125
-         * Platter = 125 / 62
-         * Rain = 62
-         */
-        private static bool IsHigherSnapped(Beatmap.Difficulty difficulty, CatchHitObject currentObject, CatchHitObject lastObject)
-        {
-            var ms = currentObject.time - lastObject.time;
-
-            return difficulty switch
-            {
-                Beatmap.Difficulty.Normal => (ms < 250),
-                Beatmap.Difficulty.Hard => (ms < (lastObject.MovementType == MovementType.HYPERDASH ? 250 : 124)),
-                Beatmap.Difficulty.Insane => (ms < (124)),
-                _ => false
-            };
         }
     }
 }
