@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MapsetParser.objects;
 
 namespace MapsetChecksCatch.Helper
@@ -26,9 +25,9 @@ namespace MapsetChecksCatch.Helper
             return NoteType switch
             {
                 NoteType.CIRCLE => "Circle",
-                NoteType.HEAD => "Slider Head",
-                NoteType.REPEAT => "Slider Repeat",
-                NoteType.TAIL => "Slider Tail",
+                NoteType.HEAD => "Slider head",
+                NoteType.REPEAT => "Slider repeat",
+                NoteType.TAIL => "Slider tail",
                 NoteType.DROPLET => "Droplet",
                 _ => "NULL"
             };

@@ -32,12 +32,12 @@ namespace MapsetChecksCatch.Checks.General
                 {
                     "Purpose",
                     @"
-                    Calculate all the dash and hyperdash distances of this beatmap and cache it so it can later be used."
+                    Calculate all the dash and hyperdash distances of this beatmap and cache it so we can use it for distance specific checks."
                 },
                 {
                     "Reasoning",
                     @"
-                    Calculating the beatmap distances can be a heavy process and should only be calculated once."
+                    Calculating the beatmap distances can be a heavy process and should only be done once to avoid long loading times with slower computers."
                 }
             }
         };

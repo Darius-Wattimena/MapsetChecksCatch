@@ -36,17 +36,18 @@ namespace MapsetChecksCatch.Helper
                 {
                     // We only have a slider end so can specify this as a "Tail"
                     objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, edgeTimes, objectCode, NoteType.TAIL));
-                } 
-                else if (edgeTimes.Count >= 2) 
+                }
+                else
                 {
                     // We have a repeat so the slider end is the last object
                     var lastObjectArray = new[] { edgeTimes.Last() };
+                    
+                    objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, lastObjectArray, objectCode, NoteType.TAIL));
 
                     // Remove the last object from the edgeTimes so we only have repeats
                     edgeTimes.RemoveAt(edgeTimes.Count - 1);
 
                     objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, edgeTimes, objectCode, NoteType.REPEAT));
-                    objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, lastObjectArray, objectCode, NoteType.TAIL));
                 }
 
                 foreach (var sliderTick in mapSliderObject.sliderTickTimes)

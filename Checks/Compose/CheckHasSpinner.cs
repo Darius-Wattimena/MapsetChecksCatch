@@ -5,7 +5,7 @@ using MapsetParser.objects.hitobjects;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
-using static MapsetParser.objects.Beatmap;
+using static MapsetParser.objects.Beatmap.Mode;
 
 namespace MapsetChecksCatch.Checks.Compose
 {
@@ -16,7 +16,7 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             Category = "Compose",
             Message = "Missing spinner.",
-            Modes = new[] { Mode.Catch },
+            Modes = new[] { Catch },
             Author = "Greaper",
 
             Documentation = new Dictionary<string, string>

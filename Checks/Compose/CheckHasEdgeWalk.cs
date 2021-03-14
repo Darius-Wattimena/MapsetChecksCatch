@@ -7,6 +7,7 @@ using MapsetParser.statics;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
+using static MapsetParser.objects.Beatmap.Mode;
 
 namespace MapsetChecksCatch.Checks.Compose
 {
@@ -17,7 +18,7 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             Category = "Compose",
             Message = "Too strong walks.",
-            Modes = new[] { Beatmap.Mode.Catch },
+            Modes = new[] { Catch },
             Author = "Greaper",
 
             Documentation = new Dictionary<string, string>

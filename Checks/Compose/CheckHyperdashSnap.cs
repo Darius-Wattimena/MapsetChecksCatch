@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
@@ -7,6 +6,7 @@ using MapsetParser.statics;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
+using static MapsetParser.objects.Beatmap.Mode;
 
 namespace MapsetChecksCatch.Checks.Compose
 {
@@ -17,7 +17,7 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             Category = "Compose",
             Message = "Disallowed hyperdash snap.",
-            Modes = new[] { Beatmap.Mode.Catch },
+            Modes = new[] { Catch },
             Difficulties = new[] { Beatmap.Difficulty.Hard, Beatmap.Difficulty.Insane },
             Author = "Greaper",
 
