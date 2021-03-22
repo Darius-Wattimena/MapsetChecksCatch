@@ -8,7 +8,6 @@ using MapsetParser.statics;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
-using static MapsetParser.objects.Beatmap.Mode;
 
 namespace MapsetChecksCatch.Checks.Compose
 {
@@ -19,7 +18,7 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             Category = "Compose",
             Message = "Edge dashes.",
-            Modes = new[] { Catch },
+            Modes = new[] { Beatmap.Mode.Catch },
             Author = "Greaper",
 
             Documentation = new Dictionary<string, string>
@@ -85,49 +84,30 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
 
+            // All objects with potential issues
             var issueObjects = new List<CatchHitObject>();
 
-            foreach (var currentObject in catchObjects)
+            foreach (var catchObject in catchObjects)
             {
-                var hyperDistance = currentObject.DistanceToHyperDash;
-
-                if (hyperDistance > 0)
+                if (catchObject.MovementType == MovementType.DASH)
                 {
-                    issueObjects.Add(currentObject);
+                    issueObjects.Add(catchObject);
                 }
 
-                if (currentObject.Extras == null) continue;
-
-                foreach (var sliderExtras in currentObject.Extras)
-                {
-                    if (sliderExtras.DistanceToHyperDash > 0)
-                    {
-                        issueObjects.Add(sliderExtras);
-                    }
-                }
+                issueObjects.AddRange(catchObject.Extras
+                    .Where(extraObject => extraObject.MovementType == MovementType.DASH));
             }
 
-            foreach (var issueObject in issueObjects)
+            foreach (var issueObject in issueObjects.Where(issueObject => issueObject.IsEdgeMovement))
             {
-                if (issueObject.DistanceToHyperDash < 5)
-                {
-                    yield return EdgeDashIssue(GetTemplate("EdgeDash"), beatmap, issueObject,
-                        Beatmap.Difficulty.Insane);
-                    /*if (issueObject.Target.NoteType != NoteType.DROPLET)
-                    {
-                        yield return EdgeDashIssue(GetTemplate("EdgeDash"), beatmap, issueObject,
-                            Beatmap.Difficulty.Insane);
-                    }*/
+                yield return EdgeDashIssue(GetTemplate("EdgeDash"), beatmap, issueObject,
+                    Beatmap.Difficulty.Insane);
 
-                    yield return EdgeDashIssue(GetTemplate("EdgeDashMinor"), beatmap, issueObject,
-                        Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra);
-                }
-
-                if (issueObject.DistanceToHyperDash < 10)
-                {
-                    yield return EdgeDashIssue(GetTemplate("EdgeDashProblem"), beatmap, issueObject,
-                        Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard);
-                }
+                yield return EdgeDashIssue(GetTemplate("EdgeDashMinor"), beatmap, issueObject,
+                    Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra);
+                    
+                yield return EdgeDashIssue(GetTemplate("EdgeDashProblem"), beatmap, issueObject,
+                    Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard);
             }
         }
     }

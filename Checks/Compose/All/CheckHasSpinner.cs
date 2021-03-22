@@ -5,9 +5,8 @@ using MapsetParser.objects.hitobjects;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
-using static MapsetParser.objects.Beatmap.Mode;
 
-namespace MapsetChecksCatch.Checks.Compose
+namespace MapsetChecksCatch.Checks.Compose.All
 {
     [Check]
     public class CheckHasSpinner : BeatmapCheck
@@ -16,7 +15,7 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             Category = "Compose",
             Message = "Missing spinner.",
-            Modes = new[] { Catch },
+            Modes = new[] { Beatmap.Mode.Catch },
             Author = "Greaper",
 
             Documentation = new Dictionary<string, string>

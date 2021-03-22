@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
-using MapsetChecksCatch.Checks.General;
+using System.Linq;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
+using MapsetParser.objects.hitobjects;
 using MapsetParser.statics;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
-using static MapsetParser.objects.Beatmap.Mode;
+using static MapsetParser.objects.HitObject;
 
-namespace MapsetChecksCatch.Checks.Compose
+namespace MapsetChecksCatch.Checks.Compose.All
 {
     [Check]
     public class CheckMaxCombo : BeatmapCheck
@@ -24,7 +25,7 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             Category = "Compose",
             Message = "Too high combo.",
-            Modes = new[] { Catch },
+            Modes = new[] { Beatmap.Mode.Catch },
             Author = "Greaper",
 
             Documentation = new Dictionary<string, string>
@@ -62,12 +63,7 @@ namespace MapsetChecksCatch.Checks.Compose
             };
         }
 
-        private enum Type
-        {
-            NewCombo = 4
-        }
-
-        private Issue ComboIssue(Beatmap beatmap, CatchHitObject startObject, int maxCombo, int currentCount,
+        private Issue ComboIssue(Beatmap beatmap, HitObject startObject, int maxCombo, int currentCount,
             Beatmap.Difficulty[] difficulties, bool isSignificant = false)
         {
             return new Issue(
@@ -79,7 +75,7 @@ namespace MapsetChecksCatch.Checks.Compose
             ).ForDifficulties(difficulties);
         }
 
-        public Issue GetComboIssues(Beatmap beatmap, CatchHitObject startObject, int count, int threshold, params Beatmap.Difficulty[] difficulties)
+        private Issue GetComboIssues(Beatmap beatmap, HitObject startObject, int count, int threshold, params Beatmap.Difficulty[] difficulties)
         {
             if (count > threshold * SignificantMultiplier)
             {
@@ -96,8 +92,8 @@ namespace MapsetChecksCatch.Checks.Compose
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
-            var count = 1;
-            var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
+            var count = 0;
+            var catchObjects = beatmap.hitObjects;
 
             if (catchObjects == null || catchObjects.Count == 0)
             {
@@ -113,9 +109,9 @@ namespace MapsetChecksCatch.Checks.Compose
 
                 // Parse hitobject types as we can't check flags
                 var objectCodeArgs = currentObject.code.Split(',');
-                var objectTypes = (Type)int.Parse(objectCodeArgs[3]);
+                var objectTypes = (Type) int.Parse(objectCodeArgs[3]);
 
-                if (objectTypes.HasFlag(Type.NewCombo))
+                if (objectTypes.HasFlag(Type.NewCombo) || objectTypes.HasFlag(Type.Spinner))
                 {
                     AddIfNotNull(issues, GetComboIssues(beatmap, startObject, count, ThresholdCup, Beatmap.Difficulty.Easy));
                     AddIfNotNull(issues, GetComboIssues(beatmap, startObject, count, ThresholdSalad, Beatmap.Difficulty.Normal));
@@ -129,8 +125,11 @@ namespace MapsetChecksCatch.Checks.Compose
                 else
                 {
                     count++;
-                    if (currentObject.Extras == null) continue;
-                    count += currentObject.Extras.Count;
+
+                    if (currentObject is Slider currentSlider)
+                    {
+                        count += BeatmapDistanceCalculator.GetEdgeTimes(currentSlider).Count();
+                    }
                 }
             }
 
@@ -146,7 +145,7 @@ namespace MapsetChecksCatch.Checks.Compose
             }
         }
 
-        public static void AddIfNotNull(List<Issue> issues, Issue issue)
+        private static void AddIfNotNull(List<Issue> issues, Issue issue)
         {
             if (issue != null)
             {

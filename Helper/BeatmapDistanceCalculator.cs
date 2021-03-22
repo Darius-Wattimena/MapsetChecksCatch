@@ -12,7 +12,7 @@ namespace MapsetChecksCatch.Helper
         public static List<CatchHitObject> Calculate(Beatmap beatmap)
         {
             var hitObjects = GenerateCatchHitObjects(beatmap);
-            CalculateDistances(hitObjects, beatmap.difficultySettings.circleSize);
+            CalculateDistances(hitObjects, beatmap);
             return hitObjects;
         }
 
@@ -94,7 +94,7 @@ namespace MapsetChecksCatch.Helper
             }
         }
 
-        private static IEnumerable<double> GetEdgeTimes(Slider sObject)
+        public static IEnumerable<double> GetEdgeTimes(Slider sObject)
         {
             for (var i = 0; i < sObject.edgeAmount; ++i)
                 yield return sObject.time + sObject.GetCurveDuration() * (i + 1);
@@ -112,7 +112,7 @@ namespace MapsetChecksCatch.Helper
             }
         }
 
-        private static void CalculateDistances(List<CatchHitObject> mapObjects, float circleSize)
+        private static void CalculateDistances(List<CatchHitObject> mapObjects, Beatmap beatmap)
         {
             var allObjects = new List<CatchHitObject>();
 
@@ -134,8 +134,9 @@ namespace MapsetChecksCatch.Helper
 
             allObjects.Sort((h1, h2) => h1.time.CompareTo(h2.time));
 
-            // Taken from Modding Assistant as osu-lazer seems broken
+            // Constant values taken from Modding Assistant as osu-lazer seems broken
             // https://github.com/rorre/decompiled-MA/blob/master/Modding%20assistant/osu/DiffCalc/BeatmapDifficultyCalculatorFruits.cs
+            var circleSize = beatmap.difficultySettings.circleSize;
             var catchDifficulty = (circleSize - 5.0) / 5.0;
             var fruitWidth = (float) (64.0 * (1.0 - 0.699999988079071 * catchDifficulty)) / 128f;
             var catcherWidth = 305f * fruitWidth * 0.7f;
@@ -175,6 +176,9 @@ namespace MapsetChecksCatch.Helper
                         walkRange = Clamp(objectMetadata.DistanceToDash, 0, halfCatcherWidth / 2);
                     }
                 }
+                
+                currentObject.NoteDirection = objectMetadata.Direction;
+                currentObject.IsEdgeMovement = IsEdgeMovement(beatmap, currentObject);
 
                 lastDirection = objectMetadata.Direction;
             }
@@ -211,6 +215,30 @@ namespace MapsetChecksCatch.Helper
             return metadata;
         }
         
+        private static double GetBeatsPerMinute(this TimingLine timingLine)
+        {
+            var msPerBeatString = timingLine.code.Split(",")[1];
+            var msPerBeat = double.Parse(msPerBeatString, CultureInfo.InvariantCulture);
+            
+            return 60000 / msPerBeat;
+        }
+
+        private static bool IsEdgeMovement(Beatmap beatmap, CatchHitObject hitObject)
+        {
+            var timingLine = beatmap.GetTimingLine(hitObject.time);
+            var bpm = GetBeatsPerMinute(timingLine);
+            var pixelsScale = (int) (180 / bpm * 10);
+
+            switch (hitObject.MovementType)
+            {
+                case MovementType.WALK:
+                    return hitObject.DistanceToDash <= pixelsScale;
+                case MovementType.DASH:
+                    return hitObject.DistanceToHyperDash <= pixelsScale;
+                default:
+                    return false;
+            }
+        }
 
         private static double Clamp(double n, double min, double max)
         {

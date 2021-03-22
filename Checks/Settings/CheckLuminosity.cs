@@ -6,7 +6,6 @@ using MapsetParser.objects;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
-using static MapsetParser.objects.Beatmap.Mode;
 
 namespace MapsetChecksCatch.Checks.Settings
 {
@@ -15,7 +14,7 @@ namespace MapsetChecksCatch.Checks.Settings
     {
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
-            Modes = new[] { Catch },
+            Modes = new[] { Beatmap.Mode.Catch },
             Category = "Settings",
             Message = "Too dark or bright combo colours.",
             Author = "Greaper",

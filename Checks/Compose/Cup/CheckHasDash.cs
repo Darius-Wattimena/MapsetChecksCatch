@@ -7,9 +7,8 @@ using MapsetParser.statics;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
-using static MapsetParser.objects.Beatmap.Mode;
 
-namespace MapsetChecksCatch.Checks.Compose
+namespace MapsetChecksCatch.Checks.Compose.Cup
 {
     [Check]
     public class CheckHasDash : BeatmapCheck
@@ -18,7 +17,7 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             Category = "Compose",
             Message = "Contains dashes.",
-            Modes = new[] { Catch },
+            Modes = new[] { Beatmap.Mode.Catch },
             Author = "Greaper",
 
             Documentation = new Dictionary<string, string>

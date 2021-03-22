@@ -6,7 +6,6 @@ using MapsetParser.statics;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
-using static MapsetParser.objects.Beatmap.Mode;
 
 namespace MapsetChecksCatch.Checks.Compose
 {
@@ -17,7 +16,7 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             Category = "Compose",
             Message = "Disallowed hyperdash snap.",
-            Modes = new[] { Catch },
+            Modes = new[] { Beatmap.Mode.Catch },
             Difficulties = new[] { Beatmap.Difficulty.Hard, Beatmap.Difficulty.Insane },
             Author = "Greaper",
 
@@ -58,22 +57,17 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
 
-            CatchHitObject lastCheckedObject = null;
-
-            if (catchObjects == null || catchObjects.Count == 0)
+            if (catchObjects.Count == 0)
             {
                 yield break;
             }
+
+            var lastCheckedObject = catchObjects[0];
 
             // We set i = 1 to skip the first object
             for (var i = 1; i < catchObjects.Count; i++)
             {
                 var currentObject = catchObjects[i];
-
-                if (lastCheckedObject == null)
-                {
-                    lastCheckedObject = catchObjects[i - 1];
-                }
 
                 if (lastCheckedObject.MovementType == MovementType.HYPERDASH)
                 {
