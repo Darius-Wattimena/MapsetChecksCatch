@@ -18,9 +18,5 @@
       <HintPath>..\MapsetVerifierFramework\bin\Debug\netcoreapp3.1\MapsetVerifierFramework.dll</HintPath>
     </Reference>
   </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Checks\Compose\Platter" />
-  </ItemGroup>
 
 </Project>

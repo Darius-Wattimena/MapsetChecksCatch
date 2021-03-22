@@ -25,14 +25,18 @@ namespace MapsetChecksCatch.Checks.Compose
                 {
                     "Purpose",
                     @"
-                    Hyperdashes are not allowed in Cups and Salads. "
+                    Hyperdashes are not allowed in Cups and Salads.
+                    </br>
+                    And hyperdashes can't be used on drops and/or slider repetitions in Platters."
                 },
                 {
                     "Reasoning",
                     @"
                     This is to ensure an easy starting experience to beginner players in Cups.
                     </br>
-                    And to ensure a manageable step in difficulty for novice players in Salads."
+                    This is to ensure a manageable step in difficulty for novice players in Salads.
+                    </br>
+                    For Platters the accuracy and control required is unreasonable and can create a situation where the player potentially fails to read the slider path."
                 }
             }
         };
@@ -42,6 +46,13 @@ namespace MapsetChecksCatch.Checks.Compose
             return new Dictionary<string, IssueTemplate>
             {
                 { "Hyperdash",
+                    new IssueTemplate(Issue.Level.Problem,
+                            "{0} {1} is a hyper.",
+                            "timestamp - ", "object")
+                        .WithCause(
+                            "Distance between the two objects is too high, triggering a hyperdash distance")
+                },
+                { "HyperdashSliderPart",
                     new IssueTemplate(Issue.Level.Problem,
                             "{0} {1} is a hyper.",
                             "timestamp - ", "object")
@@ -70,6 +81,16 @@ namespace MapsetChecksCatch.Checks.Compose
                 foreach (var catchObjectExtra in catchObject.Extras
                     .Where(catchObjectExtra => catchObjectExtra.MovementType is MovementType.HYPERDASH))
                 {
+                    if (catchObjectExtra.NoteType != NoteType.TAIL)
+                    {
+                        yield return new Issue(
+                            GetTemplate("HyperdashSliderPart"),
+                            beatmap,
+                            Timestamp.Get(catchObjectExtra, catchObjectExtra.Target),
+                            catchObjectExtra.GetNoteTypeName()
+                        ).ForDifficulties(Beatmap.Difficulty.Hard);
+                    }
+                    
                     yield return new Issue(
                         GetTemplate("Hyperdash"),
                         beatmap,

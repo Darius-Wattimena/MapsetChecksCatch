@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
@@ -59,25 +60,18 @@ namespace MapsetChecksCatch.Checks.Compose
                             "timestamp - ", "rule amount", "amount")
                         .WithCause(
                             "Too many consecutive hyperdash are used.")
-                },
-                { "ConsecutiveHigherSnap",
-                    new IssueTemplate(Issue.Level.Problem,
-                            "{0} Highersnapped hyperdash followed by a different snapped hyperdash.",
-                            "timestamp - ")
-                        .WithCause(
-                            "Higher snapped hyperdash followed by a different snapped hyperdash.")
                 }
             };
         }
 
-        public IEnumerable<Issue> GetConsecutiveHyperdashIssues(Beatmap beatmap, int count, CatchHitObject lastObject)
+        private IEnumerable<Issue> GetConsecutiveHyperdashIssues(Beatmap beatmap, int count, params HitObject[] objects)
         {
             if (count > ThresholdPlatter)
             {
                 yield return new Issue(
                     GetTemplate("Consecutive"),
                     beatmap,
-                    Timestamp.Get(lastObject.time),
+                    Timestamp.Get(objects),
                     ThresholdPlatter,
                     count
                 ).ForDifficulties(Beatmap.Difficulty.Hard);
@@ -88,14 +82,70 @@ namespace MapsetChecksCatch.Checks.Compose
                 yield return new Issue(
                     GetTemplate("Consecutive"),
                     beatmap,
-                    Timestamp.Get(lastObject.time),
+                    Timestamp.Get(objects),
                     ThresholdRain,
                     count
                 ).ForDifficulties(Beatmap.Difficulty.Insane);
             }
         }
+        
+        /// <summary>
+        /// Hyperdashes that are higher-snapped must not be used in conjunction with higher-snapped dashes or any other hyperdashes.
+        /// Hyperdashes that are higher-snapped must not be used within a slider.
+        /// 
+        /// Hyperdashes that are higher-snapped should not be followed by antiflow dashes with a gap lower than 250ms.
+        /// </summary>
+        private IEnumerable<Issue> GetHigherSnappedHyperdashesRainIssues(CatchHitObject lastObject, CatchHitObject currentObject, Beatmap beatmap)
+        {
+            switch (currentObject.MovementType)
+            {
+                case MovementType.DASH:
+                    if (currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane))
+                    {
+                        yield return new Issue(
+                            GetTemplate("RainHigherSnapFollowedByHigherSnapDash"),
+                            beatmap,
+                            Timestamp.Get(lastObject, currentObject)
+                        ).ForDifficulties(Beatmap.Difficulty.Insane);
+                    }
+                    break;
+                case MovementType.HYPERDASH:
+                    yield return new Issue(
+                        GetTemplate("RainHigherSnapFollowedByHyperdash"),
+                        beatmap,
+                        Timestamp.Get(lastObject, currentObject)
+                    ).ForDifficulties(Beatmap.Difficulty.Insane);
+                    break;
+            }
+
+            yield return null;
+        }
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
+        {
+            var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
+            var hyperdashCount = 0;
+
+            foreach (var currentObject in catchObjects)
+            {
+                if (currentObject.MovementType == MovementType.HYPERDASH)
+                {
+                    // Always count the amount of hypers.
+                    hyperdashCount += 1;
+                }
+                else
+                {
+                    foreach (var issue in GetConsecutiveHyperdashIssues(beatmap, hyperdashCount))
+                    {
+                        yield return issue;
+                    }
+                    
+                    hyperdashCount = 0;
+                }
+            }
+        }
+
+        /*public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
             var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
 
@@ -173,6 +223,6 @@ namespace MapsetChecksCatch.Checks.Compose
                     }
                 }
             }
-        }
+        }*/
     }
 }

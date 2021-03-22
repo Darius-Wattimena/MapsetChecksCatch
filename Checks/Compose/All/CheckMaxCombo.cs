@@ -113,10 +113,10 @@ namespace MapsetChecksCatch.Checks.Compose.All
 
                 if (objectTypes.HasFlag(Type.NewCombo) || objectTypes.HasFlag(Type.Spinner))
                 {
-                    AddIfNotNull(issues, GetComboIssues(beatmap, startObject, count, ThresholdCup, Beatmap.Difficulty.Easy));
-                    AddIfNotNull(issues, GetComboIssues(beatmap, startObject, count, ThresholdSalad, Beatmap.Difficulty.Normal));
-                    AddIfNotNull(issues, GetComboIssues(beatmap, startObject, count, ThresholdPlatter, Beatmap.Difficulty.Hard));
-                    AddIfNotNull(issues, GetComboIssues(beatmap, startObject, count, ThresholdRainAndOverdose, Beatmap.Difficulty.Insane, Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra));
+                    issues.AddIfNotNull(GetComboIssues(beatmap, startObject, count, ThresholdCup, Beatmap.Difficulty.Easy));
+                    issues.AddIfNotNull(GetComboIssues(beatmap, startObject, count, ThresholdSalad, Beatmap.Difficulty.Normal));
+                    issues.AddIfNotNull(GetComboIssues(beatmap, startObject, count, ThresholdPlatter, Beatmap.Difficulty.Hard));
+                    issues.AddIfNotNull(GetComboIssues(beatmap, startObject, count, ThresholdRainAndOverdose, Beatmap.Difficulty.Insane, Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra));
 
                     // Reset values for new combo
                     startObject = currentObject;
@@ -134,22 +134,14 @@ namespace MapsetChecksCatch.Checks.Compose.All
             }
 
             // Check last combo of the map
-            AddIfNotNull(issues, GetComboIssues(beatmap, startObject, count, ThresholdCup, Beatmap.Difficulty.Easy));
-            AddIfNotNull(issues, GetComboIssues(beatmap, startObject, count, ThresholdSalad, Beatmap.Difficulty.Normal));
-            AddIfNotNull(issues, GetComboIssues(beatmap, startObject, count, ThresholdPlatter, Beatmap.Difficulty.Hard));
-            AddIfNotNull(issues, GetComboIssues(beatmap, startObject, count, ThresholdRainAndOverdose, Beatmap.Difficulty.Insane, Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra));
+            issues.AddIfNotNull(GetComboIssues(beatmap, startObject, count, ThresholdCup, Beatmap.Difficulty.Easy));
+            issues.AddIfNotNull(GetComboIssues(beatmap, startObject, count, ThresholdSalad, Beatmap.Difficulty.Normal));
+            issues.AddIfNotNull(GetComboIssues(beatmap, startObject, count, ThresholdPlatter, Beatmap.Difficulty.Hard));
+            issues.AddIfNotNull(GetComboIssues(beatmap, startObject, count, ThresholdRainAndOverdose, Beatmap.Difficulty.Insane, Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra));
 
             foreach (var issue in issues)
             {
                 yield return issue;
-            }
-        }
-
-        private static void AddIfNotNull(List<Issue> issues, Issue issue)
-        {
-            if (issue != null)
-            {
-                issues.Add(issue);
             }
         }
     }

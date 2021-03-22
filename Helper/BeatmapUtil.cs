@@ -31,17 +31,6 @@ namespace MapsetChecksCatch.Helper
 
             return range.Contains(otherObject.TimeToTarget);
         }
-
-        /// <summary>
-        /// Extension function for easy access to the higher-snapped check.
-        /// </summary>
-        /// <param name="currentObject">The current object which is getting checked</param>
-        /// <param name="difficulty">The difficulty of the mapset</param>
-        /// <returns>True if the current object is higher-snapped</returns>
-        public static bool IsHigherSnapped(this CatchHitObject currentObject, Beatmap.Difficulty difficulty)
-        {
-            return IsHigherSnapped(difficulty, currentObject.Target, currentObject);
-        }
         
         /// <summary>
         /// Check if the snapping between two objects is higher-snapped or basic-snapped
@@ -53,18 +42,17 @@ namespace MapsetChecksCatch.Helper
         /// Overdose: No allowed distance are specified so no basic-snapped and higher-snapped exist
         /// 
         /// </summary>
+        /// <param name="currentObject">The current object which is getting checked</param>
         /// <param name="difficulty">The difficulty of the mapset</param>
-        /// <param name="targetObject">The object that is the target of the movement</param>
-        /// <param name="originObject">The object that is the starting point of the movement</param>
         /// <returns>True if the origin object is higher-snapped</returns>
-        public static bool IsHigherSnapped(Beatmap.Difficulty difficulty, CatchHitObject targetObject, CatchHitObject originObject)
+        public static bool IsHigherSnapped(this CatchHitObject currentObject, Beatmap.Difficulty difficulty)
         {
-            var ms = targetObject.time - originObject.time;
+            var ms = currentObject.TimeToTarget;
 
             return difficulty switch
             {
                 Beatmap.Difficulty.Normal => (ms < 250),
-                Beatmap.Difficulty.Hard => (ms < (originObject.MovementType == MovementType.HYPERDASH ? 250 : 125)),
+                Beatmap.Difficulty.Hard => (ms < (currentObject.MovementType == MovementType.HYPERDASH ? 250 : 125)),
                 Beatmap.Difficulty.Insane => (ms < (125)),
                 _ => false
             };
