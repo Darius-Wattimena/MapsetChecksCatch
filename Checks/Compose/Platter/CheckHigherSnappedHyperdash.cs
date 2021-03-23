@@ -10,7 +10,6 @@ using MapsetVerifierFramework.objects.metadata;
 
 namespace MapsetChecksCatch.Checks.Compose.Platter
 {
-    
     [Check]
     public class CheckHigherSnappedHyperdash : BeatmapCheck
     {
@@ -64,6 +63,8 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
 
             foreach (var currentObject in catchObjects)
             {
+                if (currentObject.Target == null) continue;
+                
                 if (currentObject.MovementType == MovementType.HYPERDASH)
                 {
                     var hyperTriggerDistance = (int) (Math.Abs(currentObject.X + currentObject.Target.X) 

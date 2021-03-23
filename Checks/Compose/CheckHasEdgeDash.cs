@@ -20,6 +20,10 @@ namespace MapsetChecksCatch.Checks.Compose
             Message = "Edge dashes.",
             Modes = new[] { Beatmap.Mode.Catch },
             Author = "Greaper",
+            Difficulties = new[]
+            {
+                Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard, Beatmap.Difficulty.Insane, Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra
+            },
 
             Documentation = new Dictionary<string, string>
             {

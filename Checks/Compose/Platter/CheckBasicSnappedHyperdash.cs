@@ -5,10 +5,12 @@ using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
 using MapsetParser.statics;
 using MapsetVerifierFramework.objects;
+using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
 
 namespace MapsetChecksCatch.Checks.Compose.Platter
 {
+    [Check]
     public class CheckBasicSnappedHyperdash : BeatmapCheck
     {
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
@@ -40,10 +42,17 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
             {
                 { "AntiFlowWalk",
                     new IssueTemplate(Issue.Level.Warning,
-                            "{0} Too strong basic-snapped hyperdashes followed by antiflow walk, allowed trigger distance {1}.",
+                            "{0} Too strong basic-snapped hyperdash followed by an antiflow walk, allowed trigger distance {1}.",
                             "timestamp - ", "amount")
                         .WithCause(
-                            "Too strong higher-snapped hyperdash followed by antiflow.")
+                            "Too strong basic-snapped hyperdash followed by antiflow.")
+                },
+                { "AntiFlowDash",
+                    new IssueTemplate(Issue.Level.Warning,
+                            "{0} Too strong basic-snapped hyperdash followed by an antiflow dash, allowed trigger distance {1}.",
+                            "timestamp - ", "amount")
+                        .WithCause(
+                            "Too strong basic-snapped hyperdash followed by antiflow.")
                 }
             };
         }
@@ -54,6 +63,8 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
 
             foreach (var currentObject in catchObjects)
             {
+                if (currentObject.Target == null) continue;
+                
                 if (currentObject.MovementType == MovementType.HYPERDASH)
                 {
                     var hyperTriggerDistance = (int) (Math.Abs(currentObject.X + currentObject.Target.X) 
@@ -82,6 +93,15 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                                     break;
                                 case MovementType.DASH:
                                     // Otherwise only 1.1 if followed by a basic-snapped dash
+                                    if (!currentObject.Target.IsHigherSnapped(Beatmap.Difficulty.Hard) && hyperTriggerDistance * 1.1 < currentTriggerDistance)
+                                    {
+                                        yield return new Issue(
+                                            GetTemplate("AntiFlowDash"),
+                                            beatmap,
+                                            Timestamp.Get(currentObject, currentObject.Target),
+                                            (int) (hyperTriggerDistance * 1.1)
+                                        ).ForDifficulties(Beatmap.Difficulty.Hard);
+                                    }
                                     // TODO
                                     break;
                             }

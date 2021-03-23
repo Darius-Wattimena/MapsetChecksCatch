@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
@@ -8,19 +7,17 @@ using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
 
-namespace MapsetChecksCatch.Checks.Compose.Salad
+namespace MapsetChecksCatch.Checks.Compose.Platter
 {
     [Check]
-    public class CheckAntiFlowDashes : BeatmapCheck
+    public class CheckHyperdashSnap : BeatmapCheck
     {
-        private const int AllowedBasicSnappedDashes = 2;
-
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Higher-snapped anti-flow dash.",
+            Message = "Disallowed hyperdash snap.",
             Modes = new[] { Beatmap.Mode.Catch },
-            Difficulties = new[] { Beatmap.Difficulty.Normal },
+            Difficulties = new[] { Beatmap.Difficulty.Hard },
             Author = "Greaper",
 
             Documentation = new Dictionary<string, string>
@@ -42,11 +39,11 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
         {
             return new Dictionary<string, IssueTemplate>
             {
-                { "Warning",
-                    new IssueTemplate(Issue.Level.Warning,
-                            "{0} is a higher-snapped dash followed by anti-flow movement.",
+                { "DifferentSnapHyperdashes",
+                    new IssueTemplate(Issue.Level.Problem,
+                            "{0} is an edge dash.",
                             "timestamp - ")
-                        .WithCause("The next movement after the higher-snapped dash is not to the same direction")
+                        .WithCause("Object is almost a hyper making it an edge dash.")
                 }
             };
         }
@@ -54,24 +51,21 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
             var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
-            
-            if (catchObjects.Count == 0)
-            {
-                yield break;
-            }
 
-            foreach (var dashObject in catchObjects.Where(catchObject => catchObject.MovementType == MovementType.DASH))
+            foreach (var catchObject in catchObjects)
             {
-                // only higher-snapped objects need to be going to the same direction so we can basic-dashes.
-                if (!dashObject.IsHigherSnapped(Beatmap.Difficulty.Normal)) continue;
+                if (catchObject.Target == null) continue;
                 
-                if (dashObject.Target.NoteDirection != dashObject.NoteDirection)
+                if (catchObject.MovementType == MovementType.HYPERDASH && catchObject.Target.MovementType == MovementType.HYPERDASH)
                 {
-                    yield return new Issue(
-                        GetTemplate("Warning"),
-                        beatmap,
-                        Timestamp.Get(dashObject, dashObject.Target)
-                    ).ForDifficulties(Beatmap.Difficulty.Normal);
+                    if (!catchObject.IsSameSnap(catchObject.Target))
+                    {
+                        yield return new Issue(
+                            GetTemplate("DifferentSnapHyperdashes"),
+                            beatmap,
+                            Timestamp.Get(catchObject, catchObject.Target)
+                        ).ForDifficulties(Beatmap.Difficulty.Hard);
+                    }
                 }
             }
         }

@@ -10,7 +10,7 @@ using MapsetVerifierFramework.objects.metadata;
 namespace MapsetChecksCatch.Checks.Compose.Salad
 {
     [Check]
-    public class CheckBasicDashes : BeatmapCheck
+    public class CheckBasicDash : BeatmapCheck
     {
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
@@ -68,7 +68,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
                     if (catchObject.MovementType == MovementType.DASH &&
                         catchObject.IsHigherSnapped(Beatmap.Difficulty.Normal))
                     {
-                        if (lastObject.IsSameSnap(catchObject))
+                        if (!lastObject.IsSameSnap(catchObject))
                         {
                             yield return new Issue(
                                 GetTemplate("Warning"),

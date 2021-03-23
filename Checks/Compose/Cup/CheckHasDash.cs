@@ -55,6 +55,8 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
 
             foreach (var catchObject in catchObjects)
             {
+                if (catchObject.Target == null) continue;
+                
                 if (catchObject.MovementType is MovementType.DASH)
                 {
                     yield return new Issue(

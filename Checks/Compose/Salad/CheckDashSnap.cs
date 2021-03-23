@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
@@ -17,7 +18,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Disallowed hyperdash snap.",
+            Message = "Disallowed dash snap.",
             Modes = new[] { Beatmap.Mode.Catch },
             Difficulties = new[] { Beatmap.Difficulty.Normal },
             Author = "Greaper",
@@ -108,7 +109,8 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
                         yield return new Issue(
                             GetTemplate("AmountOfDashes"),
                             beatmap,
-                            Timestamp.Get(dashObjects.ToArray())
+                            Timestamp.Get(dashObjects.ToArray()),
+                            dashObjects.Count
                         ).ForDifficulties(Beatmap.Difficulty.Normal);
                     }
                     
