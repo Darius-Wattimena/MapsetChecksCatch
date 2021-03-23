@@ -68,25 +68,26 @@ namespace MapsetChecksCatch.Checks.Compose
 
             foreach (var catchObject in catchObjects)
             {
-                if (catchObject.MovementType is MovementType.HYPERDASH)
+                if (catchObject.MovementType == MovementType.HYPERDASH)
                 {
                     yield return new Issue(
                         GetTemplate("Hyperdash"),
                         beatmap,
-                        Timestamp.Get(catchObject, catchObject.Target),
+                        TimestampHelper.Get(catchObject, catchObject.Target),
                         catchObject.GetNoteTypeName()
                     ).ForDifficulties(Beatmap.Difficulty.Easy, Beatmap.Difficulty.Normal);
                 }
 
-                foreach (var catchObjectExtra in catchObject.Extras
-                    .Where(catchObjectExtra => catchObjectExtra.MovementType is MovementType.HYPERDASH))
+                foreach (var catchObjectExtra in catchObject.Extras)
                 {
+                    if (catchObjectExtra.MovementType != MovementType.HYPERDASH) continue;
+                    
                     if (catchObjectExtra.NoteType != NoteType.TAIL)
                     {
                         yield return new Issue(
                             GetTemplate("HyperdashSliderPart"),
                             beatmap,
-                            Timestamp.Get(catchObjectExtra, catchObjectExtra.Target),
+                            TimestampHelper.Get(catchObjectExtra, catchObjectExtra.Target),
                             catchObjectExtra.GetNoteTypeName()
                         ).ForDifficulties(Beatmap.Difficulty.Hard);
                     }
@@ -94,7 +95,7 @@ namespace MapsetChecksCatch.Checks.Compose
                     yield return new Issue(
                         GetTemplate("Hyperdash"),
                         beatmap,
-                        Timestamp.Get(catchObjectExtra, catchObjectExtra.Target),
+                        TimestampHelper.Get(catchObjectExtra, catchObjectExtra.Target),
                         catchObjectExtra.GetNoteTypeName()
                     ).ForDifficulties(Beatmap.Difficulty.Easy, Beatmap.Difficulty.Normal);
                 }

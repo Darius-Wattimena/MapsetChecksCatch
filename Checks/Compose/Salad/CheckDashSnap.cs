@@ -18,7 +18,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Disallowed dash snap.",
+            Message = "[S] Disallowed dash snap.",
             Modes = new[] { Beatmap.Mode.Catch },
             Difficulties = new[] { Beatmap.Difficulty.Normal },
             Author = "Greaper",
@@ -49,13 +49,13 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
             {
                 { "AmountOfDashes",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} only 2 basic dashes in a row are allowed, currently its {1}.",
+                            "{0} Only 2 basic dashes in a row are allowed, currently its {1}.",
                             "timestamp - ", "current amount")
                         .WithCause("3 or more consecutive dashes in a row are used.")
                 },
                 { "HigherSnappedDash",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} is a higher-snapped dash and not followed by a walk.",
+                            "{0} Is a higher-snapped dash and not followed by a walk.",
                             "timestamp - ")
                         .WithCause("Next object is a dash.")
                 }
@@ -84,14 +84,14 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
                         yield return new Issue(
                             GetTemplate("HigherSnappedDash"),
                             beatmap,
-                            Timestamp.Get(lastObject)
+                            TimestampHelper.Get(lastObject)
                         ).ForDifficulties(Beatmap.Difficulty.Normal);
                     }
 
                     nextMustBeWalkable = false;
                 }
 
-                if (catchObject.MovementType is MovementType.DASH)
+                if (catchObject.MovementType == MovementType.DASH)
                 {
                     var isHigherSnapped = catchObject.IsHigherSnapped(Beatmap.Difficulty.Normal);
 
@@ -109,7 +109,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
                         yield return new Issue(
                             GetTemplate("AmountOfDashes"),
                             beatmap,
-                            Timestamp.Get(dashObjects.ToArray()),
+                            TimestampHelper.Get(dashObjects.ToArray()),
                             dashObjects.Count
                         ).ForDifficulties(Beatmap.Difficulty.Normal);
                     }

@@ -16,7 +16,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Basic-snapped hyperdash.",
+            Message = "[P] Basic-snapped hyperdash.",
             Modes = new[] {Beatmap.Mode.Catch},
             Difficulties = new[] {Beatmap.Difficulty.Hard},
             Author = "Greaper",
@@ -67,10 +67,8 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                 
                 if (currentObject.MovementType == MovementType.HYPERDASH)
                 {
-                    var hyperTriggerDistance = (int) (Math.Abs(currentObject.X + currentObject.Target.X) 
-                                                      - Math.Abs(currentObject.DistanceToHyperDash));
-                    var currentTriggerDistance = (int) (Math.Abs(currentObject.X + currentObject.Target.X) 
-                                                        + Math.Abs(currentObject.DistanceToHyperDash));
+                    var hyperTriggerDistance = (int) currentObject.GetTriggerDistance();
+                    var currentTriggerDistance = (int) currentObject.GetCurrentTriggerDistance();
                     
                     if (!currentObject.IsHigherSnapped(Beatmap.Difficulty.Hard))
                     {
@@ -86,7 +84,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                                         yield return new Issue(
                                             GetTemplate("AntiFlowWalk"),
                                             beatmap,
-                                            Timestamp.Get(currentObject, currentObject.Target),
+                                            TimestampHelper.Get(currentObject, currentObject.Target),
                                             (int) (hyperTriggerDistance * 1.2)
                                         ).ForDifficulties(Beatmap.Difficulty.Hard);
                                     }
@@ -98,7 +96,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                                         yield return new Issue(
                                             GetTemplate("AntiFlowDash"),
                                             beatmap,
-                                            Timestamp.Get(currentObject, currentObject.Target),
+                                            TimestampHelper.Get(currentObject, currentObject.Target),
                                             (int) (hyperTriggerDistance * 1.1)
                                         ).ForDifficulties(Beatmap.Difficulty.Hard);
                                     }

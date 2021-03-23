@@ -46,7 +46,7 @@ namespace MapsetChecksCatch.Checks.Compose
             {
                 { "HyperdashSnap",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} current snap is not allowed, only ticks with at least {1}ms are allowed, currently {2}ms.",
+                            "{0} Current snap is not allowed, only ticks with at least {1}ms are allowed, currently {2}ms.",
                             "timestamp - ", "allowed", "current")
                         .WithCause("The used snap is not allowed.")
                 }

@@ -17,7 +17,7 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Basic-snapped hyperdash.",
+            Message = "[R] Basic-snapped hyperdash.",
             Modes = new[] {Beatmap.Mode.Catch},
             Difficulties = new[] {Beatmap.Difficulty.Insane},
             Author = "Greaper",
@@ -72,14 +72,18 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
 
                 if (basicSnappedHyperdash != null)
                 {
-                    if (!currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane) && basicSnappedHyperdash.IsSameSnap(currentObject))
+                    if (currentObject.MovementType == MovementType.HYPERDASH 
+                        && !currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane) 
+                        && !basicSnappedHyperdash.IsSameSnap(currentObject))
                     {
                         yield return new Issue(
                             GetTemplate("DifferentSnap"),
                             beatmap,
-                            Timestamp.Get(basicSnappedHyperdash, currentObject)
+                            TimestampHelper.Get(basicSnappedHyperdash, currentObject)
                         ).ForDifficulties(Beatmap.Difficulty.Insane);
                     }
+
+                    basicSnappedHyperdash = null;
                 }
                 
                 if (currentObject.NoteType == NoteType.HEAD)
@@ -97,7 +101,7 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
                         yield return new Issue(
                             GetTemplate("ConsecutiveHyperdashes"),
                             beatmap,
-                            Timestamp.Get(currentObject),
+                            TimestampHelper.Get(currentObject),
                             sliderHyperCount
                         ).ForDifficulties(Beatmap.Difficulty.Insane);
                     }

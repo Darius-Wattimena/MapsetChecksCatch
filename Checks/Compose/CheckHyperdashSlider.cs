@@ -69,14 +69,14 @@ namespace MapsetChecksCatch.Checks.Compose
                         yield return new Issue(
                             GetTemplate("SliderHyperPlatter"),
                             beatmap,
-                            Timestamp.Get(catchObject, catchObject.Target),
+                            TimestampHelper.Get(catchObject, catchObject.Target),
                             catchObject.GetNoteTypeName()
                         ).ForDifficulties(Beatmap.Difficulty.Hard);
                         
                         yield return new Issue(
                             GetTemplate("SliderHyperRain"),
                             beatmap,
-                            Timestamp.Get(catchObject, catchObject.Target),
+                            TimestampHelper.Get(catchObject, catchObject.Target),
                             catchObject.GetNoteTypeName()
                         ).ForDifficulties(Beatmap.Difficulty.Insane);
                     }

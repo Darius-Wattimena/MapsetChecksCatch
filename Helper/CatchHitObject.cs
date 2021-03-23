@@ -35,6 +35,8 @@ namespace MapsetChecksCatch.Helper
         /// </summary>
         public int TimeToTarget { get; set; }
         
+        public CatchHitObject SliderHead { get; set; }
+        
         /// <summary>
         /// The target of this object.
         /// </summary>
@@ -88,6 +90,7 @@ namespace MapsetChecksCatch.Helper
         HEAD,
         REPEAT,
         TAIL,
-        DROPLET
+        DROPLET,
+        SPINNER
     }
 }

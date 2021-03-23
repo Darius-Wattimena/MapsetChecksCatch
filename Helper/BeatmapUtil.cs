@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using MapsetParser.objects;
 
@@ -13,6 +14,50 @@ namespace MapsetChecksCatch.Helper
             var title = beatmap?.metadataSettings?.title ?? "";
             
             return $"difficulty={difficulty}creator={creator}artist={artist}title={title}";
+        }
+        
+        public static float GetCurrentTriggerDistance(this CatchHitObject currentObject)
+        {
+            if (currentObject.MovementType != MovementType.HYPERDASH)
+            {
+                return 0f;
+            }
+
+            var xDistance = currentObject.NoteDirection switch
+            {
+                NoteDirection.LEFT => currentObject.X - currentObject.Target.X,
+                NoteDirection.RIGHT => currentObject.Target.X - currentObject.X,
+                _ => 0f
+            };
+
+            if (xDistance > 0f)
+            {
+                return xDistance + Math.Abs(currentObject.DistanceToDash);
+            }
+
+            return 0f;
+        }
+        
+        public static float GetTriggerDistance(this CatchHitObject currentObject)
+        {
+            if (currentObject.MovementType != MovementType.HYPERDASH)
+            {
+                return 0f;
+            }
+
+            var xDistance = currentObject.NoteDirection switch
+            {
+                NoteDirection.LEFT => currentObject.X - currentObject.Target.X,
+                NoteDirection.RIGHT => currentObject.Target.X - currentObject.X,
+                _ => 0f
+            };
+
+            if (xDistance > 0f)
+            {
+                return xDistance - Math.Abs(currentObject.DistanceToDash);
+            }
+
+            return 0f;
         }
 
         /// <summary>

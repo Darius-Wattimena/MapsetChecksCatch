@@ -17,7 +17,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Higher-snapped dash.",
+            Message = "[P] Higher-snapped dash.",
             Modes = new[] {Beatmap.Mode.Catch},
             Difficulties = new[] {Beatmap.Difficulty.Hard},
             Author = "Greaper",
@@ -51,7 +51,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                 { "HigherSnappedAntiFlowConsecutive",
                     new IssueTemplate(Issue.Level.Warning,
                             "{0} Consecutive higher-snapped dashes must not contain anti-flow.",
-                            "timestamp - ", "amount")
+                            "timestamp - ")
                         .WithCause(
                             "Two consecutive higher-snapped dashes with a direction change.")
                 }
@@ -83,7 +83,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                                 yield return new Issue(
                                     GetTemplate("HigherSnappedAntiFlowConsecutive"),
                                     beatmap,
-                                    Timestamp.Get(consecutiveObjects.ToArray())
+                                    TimestampHelper.Get(consecutiveObjects.ToArray())
                                 ).ForDifficulties(Beatmap.Difficulty.Hard);
                             }
                         }
@@ -109,7 +109,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                         yield return new Issue(
                             GetTemplate("HigherSnappedConsecutive"),
                             beatmap,
-                            Timestamp.Get(consecutiveObjects.ToArray()),
+                            TimestampHelper.Get(consecutiveObjects.ToArray()),
                             2,
                             totalConsecutiveHigherSnappedDashes
                         ).ForDifficulties(Beatmap.Difficulty.Hard);

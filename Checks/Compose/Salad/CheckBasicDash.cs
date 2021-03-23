@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
-using MapsetParser.statics;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
@@ -15,7 +14,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Higher-snapped anti-flow dash.",
+            Message = "[S] Basic-snapped dash snap.",
             Modes = new[] {Beatmap.Mode.Catch},
             Difficulties = new[] {Beatmap.Difficulty.Normal},
             Author = "Greaper",
@@ -42,7 +41,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
                 {
                     "Warning",
                     new IssueTemplate(Issue.Level.Warning,
-                            "{0} should be basic-snapped dashes of the same snap.",
+                            "{0} Should be basic-snapped dashes of the same snap.",
                             "timestamp - ")
                         .WithCause("A basic-snapped dash is followed by a different basic-snapped dash")
                 }
@@ -73,7 +72,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
                             yield return new Issue(
                                 GetTemplate("Warning"),
                                 beatmap,
-                                Timestamp.Get(lastObject, catchObject, catchObject.Target)
+                                TimestampHelper.Get(lastObject, catchObject, catchObject.Target)
                             ).ForDifficulties(Beatmap.Difficulty.Normal);
                         }
                     }

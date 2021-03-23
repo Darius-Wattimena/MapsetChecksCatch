@@ -29,28 +29,28 @@ namespace MapsetChecksCatch.Helper
 
                 // The first object of a slider is always its head
                 var sliderObject = new CatchHitObject(objectCode, beatmap, NoteType.HEAD);
-
+                
                 var edgeTimes = GetEdgeTimes(mapSliderObject).ToList();
 
-                if (edgeTimes.Count == 1)
+                if (edgeTimes.Count == 2)
                 {
                     // We only have a slider end so can specify this as a "Tail"
-                    objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, edgeTimes, objectCode, NoteType.TAIL));
+                    objectExtras.AddRange(CreateObjectExtra(beatmap, sliderObject, mapSliderObject, edgeTimes, objectCode, NoteType.TAIL));
                 }
                 else
                 {
                     // We have a repeat so the slider end is the last object
                     var lastObjectArray = new[] { edgeTimes.Last() };
                     
-                    objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, lastObjectArray, objectCode, NoteType.TAIL));
+                    objectExtras.AddRange(CreateObjectExtra(beatmap, sliderObject, mapSliderObject, lastObjectArray, objectCode, NoteType.TAIL));
 
                     // Remove the last object from the edgeTimes so we only have repeats
                     edgeTimes.RemoveAt(edgeTimes.Count - 1);
 
-                    objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, edgeTimes, objectCode, NoteType.REPEAT));
+                    objectExtras.AddRange(CreateObjectExtra(beatmap, sliderObject, mapSliderObject, edgeTimes, objectCode, NoteType.REPEAT));
                 }
 
-                foreach (var sliderTick in mapSliderObject.sliderTickTimes)
+                foreach (var sliderTick in mapSliderObject.sliderTickTimes.Where(tickTime => !objectExtras.Any(extra => IsSimilarTime(tickTime, extra.time))))
                 {
                     // Only add a slider tick to the objects extra if not present yet
                     if (objectExtras.Any(x => x.time.Equals(sliderTick)))
@@ -58,7 +58,7 @@ namespace MapsetChecksCatch.Helper
                         continue;
                     }
 
-                    objectExtras.AddRange(CreateObjectExtra(beatmap, mapSliderObject, new [] { sliderTick }, objectCode, NoteType.DROPLET));
+                    objectExtras.AddRange(CreateObjectExtra(beatmap, sliderObject, mapSliderObject, new [] { sliderTick }, objectCode, NoteType.DROPLET));
                 }
 
                 objectExtras.Sort((h1, h2) => h1.time.CompareTo(h2.time));
@@ -73,12 +73,26 @@ namespace MapsetChecksCatch.Helper
                 where mapObject is Circle
                 select new CatchHitObject(mapObject.code.Split(','), beatmap, NoteType.CIRCLE)
             );
-
             
-
+            // Add all spinners so we can ignore then when calculating dashes or hyperdashes
+            objects.AddRange(
+                from mapObject in mapObjects
+                where mapObject is Spinner
+                select new CatchHitObject(mapObject.code.Split(','), beatmap, NoteType.SPINNER)
+            );
+            
             objects.Sort((h1, h2) => h1.time.CompareTo(h2.time));
 
             return new HashSet<CatchHitObject>(objects, new TimeComparer()).ToList();
+        }
+
+        private static bool IsSimilarTime(double thisTime, double otherTime)
+        {
+            var range = Enumerable.Range(
+                (int) (thisTime - 4.0), 
+                (int) (thisTime + 4.0));
+
+            return range.Contains((int) otherTime);
         }
 
         private class TimeComparer : IEqualityComparer<CatchHitObject>
@@ -94,13 +108,15 @@ namespace MapsetChecksCatch.Helper
             }
         }
 
+        // Get all edge times except of the slider head
         public static IEnumerable<double> GetEdgeTimes(Slider sObject)
         {
             for (var i = 0; i < sObject.edgeAmount; ++i)
                 yield return sObject.time + sObject.GetCurveDuration() * (i + 1);
         }
 
-        private static IEnumerable<CatchHitObject> CreateObjectExtra(Beatmap beatmap, Slider slider, IEnumerable<double> times, string[] objectCode, NoteType type)
+        private static IEnumerable<CatchHitObject> CreateObjectExtra(Beatmap beatmap, CatchHitObject catchHitObject,
+            Slider slider, IEnumerable<double> times, string[] objectCode, NoteType type)
         {
             foreach (var time in times)
             {
@@ -108,7 +124,9 @@ namespace MapsetChecksCatch.Helper
                     .ToString(CultureInfo.InvariantCulture);
                 objectCode[2] = time.ToString(CultureInfo.InvariantCulture);
                 var line = string.Join(",", objectCode);
-                yield return new CatchHitObject(line.Split(','), beatmap, type);
+                var catchSliderHitObject = new CatchHitObject(line.Split(','), beatmap, type);
+                catchSliderHitObject.SliderHead = catchHitObject;
+                yield return catchSliderHitObject;
             }
         }
 
@@ -116,7 +134,7 @@ namespace MapsetChecksCatch.Helper
         {
             var allObjects = new List<CatchHitObject>();
 
-            foreach (var currentObject in mapObjects.Where(currentObject => currentObject.type != HitObject.Type.Spinner))
+            foreach (var currentObject in mapObjects)
             {
                 allObjects.Add(currentObject);
 
@@ -149,23 +167,35 @@ namespace MapsetChecksCatch.Helper
             {
                 var currentObject = allObjects[i];
                 var nextObject = allObjects[i + 1];
-
-                var objectMetadata = GenerateObjectMetadata(currentObject, nextObject, lastDirection, dashRange, walkRange, halfCatcherWidth);
                 currentObject.Target = nextObject;
-                currentObject.DistanceToHyperDash = objectMetadata.DistanceToHyper;
-                currentObject.DistanceToDash = objectMetadata.DistanceToDash;
-                currentObject.MovementType = objectMetadata.MovementType;
-                
-                // Cast to an int since osu seems to be doing something similar
-                currentObject.TimeToTarget = (int) (nextObject.time - currentObject.time);
 
-                if (objectMetadata.MovementType == MovementType.HYPERDASH)
+                if (currentObject.NoteType == NoteType.SPINNER || nextObject.NoteType == NoteType.SPINNER)
                 {
+                    currentObject.MovementType = MovementType.WALK;
+                    
+                    // Reset everything when we have a spinner, ignore spinner hyperdashes
                     dashRange = halfCatcherWidth;
+                    walkRange = halfCatcherWidth / 2;
+                    lastDirection = NoteDirection.NONE;
                 }
                 else
                 {
-                    dashRange = Clamp(objectMetadata.DistanceToHyper, 0, halfCatcherWidth);
+                    var objectMetadata = GenerateObjectMetadata(currentObject, nextObject, lastDirection, dashRange, walkRange, halfCatcherWidth);
+                    currentObject.DistanceToHyperDash = objectMetadata.DistanceToHyper;
+                    currentObject.DistanceToDash = objectMetadata.DistanceToDash;
+                    currentObject.MovementType = objectMetadata.MovementType;
+                
+                    // Cast to an int since osu seems to be doing something similar
+                    currentObject.TimeToTarget = (int) objectMetadata.TimeToNext;
+
+                    if (objectMetadata.MovementType == MovementType.HYPERDASH)
+                    {
+                        dashRange = halfCatcherWidth;
+                    }
+                    else
+                    {
+                        dashRange = Clamp(objectMetadata.DistanceToHyper, 0, halfCatcherWidth);
+                    }
 
                     if (objectMetadata.MovementType == MovementType.DASH)
                     {
@@ -175,12 +205,12 @@ namespace MapsetChecksCatch.Helper
                     {
                         walkRange = Clamp(objectMetadata.DistanceToDash, 0, halfCatcherWidth / 2);
                     }
-                }
                 
-                currentObject.NoteDirection = objectMetadata.Direction;
-                currentObject.IsEdgeMovement = IsEdgeMovement(beatmap, currentObject);
+                    currentObject.NoteDirection = objectMetadata.Direction;
+                    currentObject.IsEdgeMovement = IsEdgeMovement(beatmap, currentObject);
 
-                lastDirection = objectMetadata.Direction;
+                    lastDirection = objectMetadata.Direction;
+                }
             }
         }
 
@@ -195,18 +225,18 @@ namespace MapsetChecksCatch.Helper
             var metadata = new ObjectMetadata {
                 Direction = next.X > current.X ? NoteDirection.LEFT : NoteDirection.RIGHT,
                 // 1/4th of a frame of grace time, taken from osu-stable
-                TimeToNext = next.time - current.time - 1000f / 60f / 4,
+                TimeToNext = next.time - current.time - 4.16666651f,
                 DistanceInOsuCords = Math.Abs(next.X - current.X)
             };
-            metadata.HyperDistanceToNext = metadata.DistanceInOsuCords - (lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
-            metadata.DashDistanceToNext = metadata.DistanceInOsuCords - (lastDirection == metadata.Direction ? walkRange : halfCatcherWidth / 2);
+            metadata.HyperDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE || lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
+            metadata.DashDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE || lastDirection == metadata.Direction ? walkRange : halfCatcherWidth / 2);
             metadata.DistanceToHyper = (int) (metadata.TimeToNext - metadata.HyperDistanceToNext);
-            metadata.DistanceToDash = (int) (metadata.TimeToNext - metadata.DashDistanceToNext - (metadata.TimeToNext * 0.3));
+            metadata.DistanceToDash = (int) (metadata.TimeToNext - metadata.DashDistanceToNext);
 
             // Label the type of movement based on if the distance is dashable or walkable
-            if (metadata.DistanceToHyper < 0) {
+            if (metadata.DistanceToHyper <= 0) {
                 metadata.MovementType = MovementType.HYPERDASH;
-            } else if (metadata.DistanceToDash < 0) {
+            } else if (metadata.DistanceToDash <= 0) {
                 metadata.MovementType = MovementType.DASH;
             } else {
                 metadata.MovementType = MovementType.WALK;

@@ -128,7 +128,7 @@ namespace MapsetChecksCatch.Checks.Compose.All
 
                     if (currentObject is Slider currentSlider)
                     {
-                        count += BeatmapDistanceCalculator.GetEdgeTimes(currentSlider).Count();
+                        count += BeatmapDistanceCalculator.GetEdgeTimes(currentSlider).Count() + currentSlider.sliderTickTimes.Count;
                     }
                 }
             }

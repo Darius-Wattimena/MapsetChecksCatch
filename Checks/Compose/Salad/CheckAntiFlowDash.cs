@@ -3,7 +3,6 @@ using System.Linq;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
-using MapsetParser.statics;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
@@ -18,7 +17,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Higher-snapped anti-flow dash.",
+            Message = "[S] Higher-snapped dash followed with anti-flow.",
             Modes = new[] { Beatmap.Mode.Catch },
             Difficulties = new[] { Beatmap.Difficulty.Normal },
             Author = "Greaper",
@@ -44,7 +43,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
             {
                 { "Warning",
                     new IssueTemplate(Issue.Level.Warning,
-                            "{0} is a higher-snapped dash followed by anti-flow movement.",
+                            "{0} Is a higher-snapped dash followed by anti-flow movement.",
                             "timestamp - ")
                         .WithCause("The next movement after the higher-snapped dash is not to the same direction")
                 }
@@ -67,7 +66,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
                     yield return new Issue(
                         GetTemplate("Warning"),
                         beatmap,
-                        Timestamp.Get(dashObject, dashObject.Target)
+                        TimestampHelper.Get(dashObject, dashObject.Target)
                     ).ForDifficulties(Beatmap.Difficulty.Normal);
                 }
             }

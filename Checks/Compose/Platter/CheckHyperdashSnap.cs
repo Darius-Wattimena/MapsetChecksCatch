@@ -15,7 +15,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Disallowed hyperdash snap.",
+            Message = "[P] Disallowed hyperdash snap.",
             Modes = new[] { Beatmap.Mode.Catch },
             Difficulties = new[] { Beatmap.Difficulty.Hard },
             Author = "Greaper",
@@ -63,7 +63,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                         yield return new Issue(
                             GetTemplate("DifferentSnapHyperdashes"),
                             beatmap,
-                            Timestamp.Get(catchObject, catchObject.Target)
+                            TimestampHelper.Get(catchObject, catchObject.Target)
                         ).ForDifficulties(Beatmap.Difficulty.Hard);
                     }
                 }

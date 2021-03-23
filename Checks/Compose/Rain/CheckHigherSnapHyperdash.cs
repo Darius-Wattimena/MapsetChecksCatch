@@ -16,7 +16,7 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Higher-snapped hyperdash.",
+            Message = "[R] Higher-snapped hyperdash.",
             Modes = new[] {Beatmap.Mode.Catch},
             Difficulties = new[] {Beatmap.Difficulty.Insane},
             Author = "Greaper",
@@ -49,21 +49,21 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
                 },
                 { "ConsecutiveHyperdashes",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} higher-snapped hyperdashes can't be used consecutively.",
+                            "{0} Higher-snapped hyperdashes can't be used consecutively.",
                             "timestamp - ")
                         .WithCause(
                             "Consecutive higher-snapped hyperdash.")
                 },
                 { "HyperdashSlider",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} higher-snapped hyperdash placed on slider head/repeat or droplet.",
+                            "{0} Higher-snapped hyperdash placed on slider head/repeat or droplet.",
                             "timestamp - ")
                         .WithCause(
                             "Higher-snapped hyperdash placed on slider head/repeat or droplet.")
                 },
                 { "HyperdashWithAntiFlowDash250",
                     new IssueTemplate(Issue.Level.Warning,
-                            "{0} higher-snapped hyperdash followed by an antiflow dash which is smaller then 250ms.",
+                            "{0} Higher-snapped hyperdash followed by an antiflow dash which is smaller then 250ms.",
                             "timestamp - ")
                         .WithCause(
                             "Higher-snapped hyperdash followed by a <250 ms antiflow dash.")
@@ -86,7 +86,7 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
                         yield return new Issue(
                             GetTemplate("ConsecutiveHyperdashes"),
                             beatmap,
-                            Timestamp.Get(higherSnappedHyperdash, currentObject)
+                            TimestampHelper.Get(higherSnappedHyperdash, currentObject)
                         ).ForDifficulties(Beatmap.Difficulty.Insane);
                     }
                     else if (currentObject.MovementType == MovementType.DASH)
@@ -97,7 +97,7 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
                             yield return new Issue(
                                 GetTemplate("HyperdashesWithHigherSnappedDashes"),
                                 beatmap,
-                                Timestamp.Get(higherSnappedHyperdash, currentObject, currentObject.Target)
+                                TimestampHelper.Get(higherSnappedHyperdash, currentObject, currentObject.Target)
                             ).ForDifficulties(Beatmap.Difficulty.Insane);
                         }
 
@@ -109,7 +109,7 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
                                 yield return new Issue(
                                     GetTemplate("HyperdashWithAntiFlowDash250"),
                                     beatmap,
-                                    Timestamp.Get(higherSnappedHyperdash, currentObject, currentObject.Target)
+                                    TimestampHelper.Get(higherSnappedHyperdash, currentObject, currentObject.Target)
                                 ).ForDifficulties(Beatmap.Difficulty.Insane);
                             }
                         }
@@ -131,7 +131,7 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
                                 yield return new Issue(
                                     GetTemplate("HyperdashSlider"),
                                     beatmap,
-                                    Timestamp.Get(currentObject, currentObject.Target)
+                                    TimestampHelper.Get(currentObject, currentObject.Target)
                                 ).ForDifficulties(Beatmap.Difficulty.Insane);
                                 break;
                         }

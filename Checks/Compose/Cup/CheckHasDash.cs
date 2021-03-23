@@ -16,7 +16,7 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
-            Message = "Contains dashes.",
+            Message = "[C] Contains dashes.",
             Modes = new[] { Beatmap.Mode.Catch },
             Author = "Greaper",
 
@@ -57,23 +57,23 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
             {
                 if (catchObject.Target == null) continue;
                 
-                if (catchObject.MovementType is MovementType.DASH)
+                if (catchObject.MovementType == MovementType.DASH)
                 {
                     yield return new Issue(
                         GetTemplate("Dash"),
                         beatmap,
-                        Timestamp.Get(catchObject, catchObject.Target),
+                        TimestampHelper.Get(catchObject, catchObject.Target),
                         catchObject.GetNoteTypeName()
                     ).ForDifficulties(Beatmap.Difficulty.Easy);
                 }
 
                 foreach (var catchObjectExtra in catchObject.Extras
-                    .Where(catchObjectExtra => catchObjectExtra.MovementType is MovementType.DASH))
+                    .Where(catchObjectExtra => catchObjectExtra.MovementType == MovementType.DASH))
                 {
                     yield return new Issue(
                         GetTemplate("Dash"),
                         beatmap,
-                        Timestamp.Get(catchObjectExtra, catchObjectExtra.Target),
+                        TimestampHelper.Get(catchObjectExtra, catchObjectExtra.Target),
                         catchObjectExtra.GetNoteTypeName()
                     ).ForDifficulties(Beatmap.Difficulty.Easy);
                 }
