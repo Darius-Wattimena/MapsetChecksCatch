@@ -80,7 +80,7 @@ namespace MapsetChecksCatch.Checks.Compose
                 beatmap,
                 Timestamp.Get(currentObject.time),
                 currentObject.GetNoteTypeName(),
-                $"{currentObject.DistanceToHyperDash}"
+                $"{currentObject.DistanceToHyper}"
             ).ForDifficulties(difficulties);
         }
 

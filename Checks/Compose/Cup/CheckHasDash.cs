@@ -41,8 +41,8 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
             {
                 { "Dash",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} {1} is a dash.",
-                            "timestamp - ", "object")
+                            "{0} There is a dash between the {1} and {2}.",
+                            "timestamp - ", "object", "target object")
                         .WithCause(
                             "Distance between the two objects is too high, triggering a dash distance")
                 }
@@ -63,19 +63,23 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
                         GetTemplate("Dash"),
                         beatmap,
                         TimestampHelper.Get(catchObject, catchObject.Target),
-                        catchObject.GetNoteTypeName()
+                        catchObject.GetNoteTypeName(),
+                        catchObject.Target.GetNoteTypeName()
                     ).ForDifficulties(Beatmap.Difficulty.Easy);
                 }
 
-                foreach (var catchObjectExtra in catchObject.Extras
-                    .Where(catchObjectExtra => catchObjectExtra.MovementType == MovementType.DASH))
+                foreach (var catchObjectExtra in catchObject.Extras)
                 {
-                    yield return new Issue(
-                        GetTemplate("Dash"),
-                        beatmap,
-                        TimestampHelper.Get(catchObjectExtra, catchObjectExtra.Target),
-                        catchObjectExtra.GetNoteTypeName()
-                    ).ForDifficulties(Beatmap.Difficulty.Easy);
+                    if (catchObjectExtra.MovementType == MovementType.DASH)
+                    {
+                        yield return new Issue(
+                            GetTemplate("Dash"),
+                            beatmap,
+                            TimestampHelper.Get(catchObjectExtra, catchObjectExtra.Target),
+                            catchObjectExtra.GetNoteTypeName(),
+                            catchObjectExtra.Target.GetNoteTypeName()
+                        ).ForDifficulties(Beatmap.Difficulty.Easy);
+                    }
                 }
             }
         }

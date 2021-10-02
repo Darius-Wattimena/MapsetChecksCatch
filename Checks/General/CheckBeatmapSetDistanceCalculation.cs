@@ -11,12 +11,12 @@ namespace MapsetChecksCatch.Checks.General
     [Check]
     public class CheckBeatmapSetDistanceCalculation : GeneralCheck
     {
-        private static readonly ConcurrentDictionary<string, List<CatchHitObject>> SetBeatmaps = new ConcurrentDictionary<string, List<CatchHitObject>>();
+        private static readonly ConcurrentDictionary<string, List<CatchHitObject>> CatchBeatmaps = new ConcurrentDictionary<string, List<CatchHitObject>>();
 
         public static List<CatchHitObject> GetBeatmapDistances(Beatmap beatmap)
         {
             var identifier = BeatmapUtil.GetBeatmapIdentifier(beatmap);
-            SetBeatmaps.TryGetValue(identifier, out var catchObjects);
+            CatchBeatmaps.TryGetValue(identifier, out var catchObjects);
 
             return catchObjects ?? new List<CatchHitObject>();
         }
@@ -54,8 +54,8 @@ namespace MapsetChecksCatch.Checks.General
                 var calculatedBeatmap = BeatmapDistanceCalculator.Calculate(beatmap);
                 var beatmapIdentifier = BeatmapUtil.GetBeatmapIdentifier(beatmap);
 
-                SetBeatmaps.TryRemove(beatmapIdentifier, out _);
-                SetBeatmaps.TryAdd(beatmapIdentifier, calculatedBeatmap);
+                CatchBeatmaps.TryRemove(beatmapIdentifier, out _);
+                CatchBeatmaps.TryAdd(beatmapIdentifier, calculatedBeatmap);
             });
 
             yield break;

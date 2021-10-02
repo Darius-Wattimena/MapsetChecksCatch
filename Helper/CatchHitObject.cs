@@ -21,7 +21,7 @@ namespace MapsetChecksCatch.Helper
         ///
         /// The object is a hyperdash when the distance is 0 or below.
         /// </summary>
-        public int DistanceToHyperDash { get; set; }
+        public int DistanceToHyper { get; set; }
         
         /// <summary>
         /// The amount of distance needed to make this object a dash.
@@ -52,7 +52,7 @@ namespace MapsetChecksCatch.Helper
         public bool IsEdgeMovement { get; set; }
         
         /// <summary>
-        /// Specify what kind of movement this note is based on the DistanceToHyperDash and DistanceToDash
+        /// Specify what kind of movement this note is based on the DistanceToHyper and DistanceToDash
         /// </summary>
         public MovementType MovementType { get; set; }
         
