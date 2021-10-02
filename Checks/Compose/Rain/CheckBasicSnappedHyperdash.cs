@@ -99,7 +99,7 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
                     if (sliderHyperCount > 2)
                     {
                         yield return new Issue(
-                            GetTemplate("ConsecutiveHyperdashes"),
+                            GetTemplate("SliderHyperdashes"),
                             beatmap,
                             TimestampHelper.Get(currentObject),
                             sliderHyperCount
