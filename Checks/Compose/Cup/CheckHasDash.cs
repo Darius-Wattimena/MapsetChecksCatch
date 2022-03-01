@@ -55,8 +55,6 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
 
             foreach (var catchObject in catchObjects)
             {
-                if (catchObject.Target == null) continue;
-                
                 if (catchObject.MovementType == MovementType.DASH)
                 {
                     yield return new Issue(
@@ -64,17 +62,6 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
                         beatmap,
                         TimestampHelper.Get(catchObject, catchObject.Target),
                         catchObject.GetNoteTypeName()
-                    ).ForDifficulties(Beatmap.Difficulty.Easy);
-                }
-
-                foreach (var catchObjectExtra in catchObject.Extras
-                    .Where(catchObjectExtra => catchObjectExtra.MovementType == MovementType.DASH))
-                {
-                    yield return new Issue(
-                        GetTemplate("Dash"),
-                        beatmap,
-                        TimestampHelper.Get(catchObjectExtra, catchObjectExtra.Target),
-                        catchObjectExtra.GetNoteTypeName()
                     ).ForDifficulties(Beatmap.Difficulty.Easy);
                 }
             }

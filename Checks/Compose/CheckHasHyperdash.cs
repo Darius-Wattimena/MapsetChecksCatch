@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MapsetChecksCatch.Checks.General;
@@ -18,6 +19,7 @@ namespace MapsetChecksCatch.Checks.Compose
             Category = "Compose",
             Message = "Contains hyperdashes.",
             Modes = new[] { Beatmap.Mode.Catch },
+            Difficulties = new [] { Beatmap.Difficulty.Easy, Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard },
             Author = "Greaper",
 
             Documentation = new Dictionary<string, string>
@@ -54,7 +56,7 @@ namespace MapsetChecksCatch.Checks.Compose
                 },
                 { "HyperdashSliderPart",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} {1} is a hyper.",
+                            "{0} {1} is an slider droplet/head/repeat hyper.",
                             "timestamp - ", "object")
                         .WithCause(
                             "Distance between the two objects is too high, triggering a hyperdash distance")
@@ -66,38 +68,28 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
 
-            foreach (var catchObject in catchObjects)
+            foreach (var catchObject in catchObjects.Where(catchObject =>
+                catchObject.MovementType == MovementType.HYPERDASH))
             {
-                if (catchObject.MovementType == MovementType.HYPERDASH)
-                {
-                    yield return new Issue(
-                        GetTemplate("Hyperdash"),
-                        beatmap,
-                        TimestampHelper.Get(catchObject, catchObject.Target),
-                        catchObject.GetNoteTypeName()
-                    ).ForDifficulties(Beatmap.Difficulty.Easy, Beatmap.Difficulty.Normal);
-                }
+                yield return new Issue(
+                    GetTemplate("Hyperdash"),
+                    beatmap,
+                    TimestampHelper.Get(catchObject, catchObject.Target),
+                    catchObject.GetNoteTypeName()
+                ).ForDifficulties(Beatmap.Difficulty.Easy, Beatmap.Difficulty.Normal);
 
-                foreach (var catchObjectExtra in catchObject.Extras)
+                switch (catchObject.NoteType)
                 {
-                    if (catchObjectExtra.MovementType != MovementType.HYPERDASH) continue;
-                    
-                    if (catchObjectExtra.NoteType != NoteType.TAIL)
-                    {
+                    case NoteType.HEAD:
+                    case NoteType.REPEAT:
+                    case NoteType.DROPLET:
                         yield return new Issue(
                             GetTemplate("HyperdashSliderPart"),
                             beatmap,
-                            TimestampHelper.Get(catchObjectExtra, catchObjectExtra.Target),
-                            catchObjectExtra.GetNoteTypeName()
+                            TimestampHelper.Get(catchObject, catchObject.Target),
+                            catchObject.GetNoteTypeName()
                         ).ForDifficulties(Beatmap.Difficulty.Hard);
-                    }
-                    
-                    yield return new Issue(
-                        GetTemplate("Hyperdash"),
-                        beatmap,
-                        TimestampHelper.Get(catchObjectExtra, catchObjectExtra.Target),
-                        catchObjectExtra.GetNoteTypeName()
-                    ).ForDifficulties(Beatmap.Difficulty.Easy, Beatmap.Difficulty.Normal);
+                        break;
                 }
             }
         }

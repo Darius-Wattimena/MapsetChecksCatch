@@ -97,9 +97,6 @@ namespace MapsetChecksCatch.Checks.Compose
                 {
                     issueObjects.Add(catchObject);
                 }
-
-                issueObjects.AddRange(catchObject.Extras
-                    .Where(extraObject => extraObject.MovementType == MovementType.DASH));
             }
 
             foreach (var issueObject in issueObjects.Where(issueObject => issueObject.IsEdgeMovement))

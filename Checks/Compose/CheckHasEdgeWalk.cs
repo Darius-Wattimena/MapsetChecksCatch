@@ -73,18 +73,6 @@ namespace MapsetChecksCatch.Checks.Compose
                 {
                     issueObjects.Add(currentObject);
                 }
-
-                if (currentObject.Extras == null) continue;
-
-                foreach (var sliderExtra in currentObject.Extras)
-                {
-                    var sliderObjectDashDistance = sliderExtra.DistanceToDash;
-
-                    if (sliderExtra.MovementType != MovementType.DASH && sliderObjectDashDistance > 0)
-                    {
-                        issueObjects.Add(sliderExtra);
-                    }
-                }
             }
 
             foreach (var issueObject in issueObjects)

@@ -53,6 +53,7 @@ namespace MapsetChecksCatch.Checks.Compose
             };
         }
 
+        // TODO REWORK
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
             var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
@@ -97,28 +98,6 @@ namespace MapsetChecksCatch.Checks.Compose
                 }
 
                 lastCheckedObject = currentObject;
-
-                //Check snaps for slider parts
-                foreach (var sliderObjectExtra in currentObject.Extras)
-                {
-                    if (lastCheckedObject.MovementType == MovementType.HYPERDASH)
-                    {
-                        var snap = (int) (sliderObjectExtra.time - lastCheckedObject.time);
-
-                        if (snap < 62 && snap > 0)
-                        {
-                            yield return new Issue(
-                                GetTemplate("HyperdashSnap"),
-                                beatmap,
-                                Timestamp.Get(currentObject.time),
-                                62,
-                                snap
-                            ).ForDifficulties(Beatmap.Difficulty.Insane);
-                        }
-                    }
-
-                    lastCheckedObject = sliderObjectExtra;
-                }
             }
         }
     }

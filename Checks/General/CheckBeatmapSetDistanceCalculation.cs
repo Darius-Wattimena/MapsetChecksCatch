@@ -11,7 +11,8 @@ namespace MapsetChecksCatch.Checks.General
     [Check]
     public class CheckBeatmapSetDistanceCalculation : GeneralCheck
     {
-        private static readonly ConcurrentDictionary<string, List<CatchHitObject>> SetBeatmaps = new ConcurrentDictionary<string, List<CatchHitObject>>();
+        private static readonly ConcurrentDictionary<string, List<CatchHitObject>> SetBeatmaps =
+            new ConcurrentDictionary<string, List<CatchHitObject>>();
 
         public static List<CatchHitObject> GetBeatmapDistances(Beatmap beatmap)
         {
@@ -21,26 +22,29 @@ namespace MapsetChecksCatch.Checks.General
             return catchObjects ?? new List<CatchHitObject>();
         }
 
-        public override CheckMetadata GetMetadata() => new CheckMetadata()
+        public override CheckMetadata GetMetadata()
         {
-            Category = "Resources",
-            Message = "Calculating dash and hyperdash distances.",
-            Author = "Greaper",
-
-            Documentation = new Dictionary<string, string>()
+            return new CheckMetadata
             {
+                Category = "Resources",
+                Message = "Calculating dash and hyperdash distances.",
+                Author = "Greaper",
+
+                Documentation = new Dictionary<string, string>
                 {
-                    "Purpose",
-                    @"
+                    {
+                        "Purpose",
+                        @"
                     Calculate all the dash and hyperdash distances of this beatmap and cache it so we can use it for distance specific checks."
-                },
-                {
-                    "Reasoning",
-                    @"
+                    },
+                    {
+                        "Reasoning",
+                        @"
                     Calculating the beatmap distances can be a heavy process and should only be done once to avoid long loading times with slower computers."
+                    }
                 }
-            }
-        };
+            };
+        }
 
         public override Dictionary<string, IssueTemplate> GetTemplates()
         {

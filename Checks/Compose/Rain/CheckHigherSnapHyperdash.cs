@@ -92,7 +92,8 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
                     else if (currentObject.MovementType == MovementType.DASH)
                     {
                         // Hyperdashes that are higher-snapped must not be used in conjunction with higher-snapped dashes.
-                        if (currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane))
+                        if (currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane) 
+                            && higherSnappedHyperdash.TimeToTarget > 125)  // Dash accuracy isn't correct at low ms
                         {
                             yield return new Issue(
                                 GetTemplate("HyperdashesWithHigherSnappedDashes"),

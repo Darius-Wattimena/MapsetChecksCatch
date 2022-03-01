@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
 using MapsetParser.objects;
-using MapsetParser.statics;
 using MapsetVerifierFramework.objects;
 using MapsetVerifierFramework.objects.attributes;
 using MapsetVerifierFramework.objects.metadata;
@@ -65,6 +63,7 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
         {
             var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
             CatchHitObject basicSnappedHyperdash = null;
+            var sliderObjects = new List<CatchHitObject>();
 
             foreach (var currentObject in catchObjects)
             {
@@ -88,25 +87,34 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
                 
                 if (currentObject.NoteType == NoteType.HEAD)
                 {
-                    var sliderHeadHyperCount = currentObject.MovementType == MovementType.HYPERDASH 
-                                               && !currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane)
-                        ? 1
-                        : 0;
-                    var sliderHyperCount = sliderHeadHyperCount + currentObject.Extras.Count(x => 
-                        x.MovementType == MovementType.HYPERDASH &&
-                        !x.IsHigherSnapped(Beatmap.Difficulty.Insane));
-
-                    if (sliderHyperCount > 2)
+                    // Check the if the last slider had more then 2 objects with hypers before continuing
+                    if (sliderObjects.Count > 2)
                     {
                         yield return new Issue(
-                            GetTemplate("ConsecutiveHyperdashes"),
+                            GetTemplate("SliderHyperdashes"),
                             beatmap,
-                            TimestampHelper.Get(currentObject),
-                            sliderHyperCount
+                            TimestampHelper.Get(sliderObjects.First()),
+                            sliderObjects.Count
                         ).ForDifficulties(Beatmap.Difficulty.Insane);
                     }
+                    
+                    sliderObjects = new List<CatchHitObject>();
+                    
+                    if (currentObject.MovementType == MovementType.HYPERDASH
+                        && !currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane))
+                    {
+                        sliderObjects.Add(currentObject);
+                    }
+                } 
+                else if (currentObject.IsSlider)
+                {
+                    if (currentObject.MovementType == MovementType.HYPERDASH 
+                        && !currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane))
+                    {
+                        sliderObjects.Add(currentObject);
+                    }
                 }
-                
+
                 if (currentObject.MovementType == MovementType.HYPERDASH 
                     && !currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane))
                 {

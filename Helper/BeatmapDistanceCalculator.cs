@@ -28,84 +28,48 @@ namespace MapsetChecksCatch.Helper
                 var objectCode = mapSliderObject.code.Split(',');
 
                 // The first object of a slider is always its head
-                var sliderObject = new CatchHitObject(objectCode, beatmap, NoteType.HEAD);
+                var sliderObject = new CatchHitObject(objectCode, beatmap, NoteType.HEAD, mapSliderObject, mapSliderObject.time);
                 
                 var edgeTimes = GetEdgeTimes(mapSliderObject).ToList();
-
-                if (edgeTimes.Count == 2)
+                
+                for (var i = 0; i < edgeTimes.Count; i++)
                 {
-                    // We only have a slider end so can specify this as a "Tail"
-                    objectExtras.AddRange(CreateObjectExtra(beatmap, sliderObject, mapSliderObject, edgeTimes, objectCode, NoteType.TAIL));
-                }
-                else
-                {
-                    // We have a repeat so the slider end is the last object
-                    var lastObjectArray = new[] { edgeTimes.Last() };
-                    
-                    objectExtras.AddRange(CreateObjectExtra(beatmap, sliderObject, mapSliderObject, lastObjectArray, objectCode, NoteType.TAIL));
-
-                    // Remove the last object from the edgeTimes so we only have repeats
-                    edgeTimes.RemoveAt(edgeTimes.Count - 1);
-
-                    objectExtras.AddRange(CreateObjectExtra(beatmap, sliderObject, mapSliderObject, edgeTimes, objectCode, NoteType.REPEAT));
+                    objectExtras.Add(i + 1 == edgeTimes.Count
+                        ? CreateObjectExtra(beatmap, sliderObject, mapSliderObject, edgeTimes[i], objectCode, NoteType.TAIL)
+                        : CreateObjectExtra(beatmap, sliderObject, mapSliderObject, edgeTimes[i], objectCode, NoteType.REPEAT));
                 }
 
-                foreach (var sliderTick in mapSliderObject.sliderTickTimes.Where(tickTime => !objectExtras.Any(extra => IsSimilarTime(tickTime, extra.time))))
-                {
-                    // Only add a slider tick to the objects extra if not present yet
-                    if (objectExtras.Any(x => x.time.Equals(sliderTick)))
-                    {
-                        continue;
-                    }
+                // TODO doesn't seem to work?
+                var actualSliderTicks = mapSliderObject.sliderTickTimes.Where(tickTime =>
+                    objectExtras.All(extra => !IsSimilarTime(tickTime, extra.ActualTime)));
 
-                    objectExtras.AddRange(CreateObjectExtra(beatmap, sliderObject, mapSliderObject, new [] { sliderTick }, objectCode, NoteType.DROPLET));
-                }
+                objectExtras.AddRange(mapSliderObject.sliderTickTimes.Select(sliderTick =>
+                    CreateObjectExtra(beatmap, sliderObject, mapSliderObject, sliderTick, objectCode, NoteType.DROPLET)));
 
-                objectExtras.Sort((h1, h2) => h1.time.CompareTo(h2.time));
-
-                sliderObject.Extras = objectExtras;
                 objects.Add(sliderObject);
+                objects.AddRange(objectExtras);
             }
 
             // Add all circles
             objects.AddRange(
                 from mapObject in mapObjects
                 where mapObject is Circle
-                select new CatchHitObject(mapObject.code.Split(','), beatmap, NoteType.CIRCLE)
+                select new CatchHitObject(mapObject.code.Split(','), beatmap, NoteType.CIRCLE, mapObject, mapObject.time)
             );
             
             // Add all spinners so we can ignore then when calculating dashes or hyperdashes
             objects.AddRange(
                 from mapObject in mapObjects
                 where mapObject is Spinner
-                select new CatchHitObject(mapObject.code.Split(','), beatmap, NoteType.SPINNER)
+                select new CatchHitObject(mapObject.code.Split(','), beatmap, NoteType.SPINNER, mapObject, mapObject.time)
             );
-            
             objects.Sort((h1, h2) => h1.time.CompareTo(h2.time));
-
-            return new HashSet<CatchHitObject>(objects, new TimeComparer()).ToList();
+            return objects;
         }
 
         private static bool IsSimilarTime(double thisTime, double otherTime)
         {
-            var range = Enumerable.Range(
-                (int) (thisTime - 4.0), 
-                (int) (thisTime + 4.0));
-
-            return range.Contains((int) otherTime);
-        }
-
-        private class TimeComparer : IEqualityComparer<CatchHitObject>
-        {
-            public bool Equals(CatchHitObject x, CatchHitObject y)
-            {
-                return x.time == y.time;
-            }
-
-            public int GetHashCode(CatchHitObject obj)
-            {
-                return (obj.time).GetHashCode();
-            }
+            return thisTime - 4.0 < otherTime || thisTime + 4.0 > otherTime;
         }
 
         // Get all edge times except of the slider head
@@ -115,42 +79,26 @@ namespace MapsetChecksCatch.Helper
                 yield return sObject.time + sObject.GetCurveDuration() * (i + 1);
         }
 
-        private static IEnumerable<CatchHitObject> CreateObjectExtra(Beatmap beatmap, CatchHitObject catchHitObject,
-            Slider slider, IEnumerable<double> times, string[] objectCode, NoteType type)
+        private static CatchHitObject CreateObjectExtra(Beatmap beatmap, CatchHitObject catchHitObject,
+            Slider slider, double time, string[] objectCode, NoteType type)
         {
-            foreach (var time in times)
+            var objectCodeCopy = (string[]) objectCode.Clone();
+            objectCodeCopy[0] = slider.GetPathPosition(time).X.ToString(CultureInfo.InvariantCulture);
+            objectCodeCopy[2] = time.ToString(CultureInfo.InvariantCulture);
+            var line = string.Join(",", objectCodeCopy);
+            var catchSliderHitObject = new CatchHitObject(line.Split(','), beatmap, type, slider, time)
             {
-                objectCode[0] = Math.Round(slider.GetPathPosition(time).X)
-                    .ToString(CultureInfo.InvariantCulture);
-                objectCode[2] = time.ToString(CultureInfo.InvariantCulture);
-                var line = string.Join(",", objectCode);
-                var catchSliderHitObject = new CatchHitObject(line.Split(','), beatmap, type);
-                catchSliderHitObject.SliderHead = catchHitObject;
-                yield return catchSliderHitObject;
-            }
+                SliderHead = catchHitObject
+            };
+            return catchSliderHitObject;
         }
 
-        private static void CalculateDistances(List<CatchHitObject> mapObjects, Beatmap beatmap)
+        private static void CalculateDistances(List<CatchHitObject> allObjects, Beatmap beatmap)
         {
-            var allObjects = new List<CatchHitObject>();
-
-            foreach (var currentObject in mapObjects)
-            {
-                allObjects.Add(currentObject);
-
-                // If object isn't Slider, just skip it
-                if (currentObject.Extras == null)
-                {
-                    continue;
-                }
-
-                allObjects.AddRange(currentObject.Extras);
-            }
-
             // No need to calculate anything when the map contains less then 2 objects
             if (allObjects.Count < 2) return;
 
-            allObjects.Sort((h1, h2) => h1.time.CompareTo(h2.time));
+            allObjects.Sort((h1, h2) => h1.ActualTime.CompareTo(h2.ActualTime));
 
             // Constant values taken from Modding Assistant as osu-lazer seems broken
             // https://github.com/rorre/decompiled-MA/blob/master/Modding%20assistant/osu/DiffCalc/BeatmapDifficultyCalculatorFruits.cs
@@ -180,7 +128,8 @@ namespace MapsetChecksCatch.Helper
                 }
                 else
                 {
-                    var objectMetadata = GenerateObjectMetadata(currentObject, nextObject, lastDirection, dashRange, walkRange, halfCatcherWidth);
+                    var objectMetadata = GenerateObjectMetadata(beatmap, currentObject, nextObject, lastDirection,
+                        dashRange, walkRange, halfCatcherWidth);
                     currentObject.DistanceToHyperDash = objectMetadata.DistanceToHyper;
                     currentObject.DistanceToDash = objectMetadata.DistanceToDash;
                     currentObject.MovementType = objectMetadata.MovementType;
@@ -215,6 +164,7 @@ namespace MapsetChecksCatch.Helper
         }
 
         private static ObjectMetadata GenerateObjectMetadata(
+            Beatmap beatmap,
             CatchHitObject current, 
             CatchHitObject next,
             NoteDirection lastDirection, 
@@ -223,20 +173,23 @@ namespace MapsetChecksCatch.Helper
             double halfCatcherWidth
         ) {
             var metadata = new ObjectMetadata {
-                Direction = next.X > current.X ? NoteDirection.LEFT : NoteDirection.RIGHT,
+                Direction = current.X == next.X ? NoteDirection.NONE : current.X > next.X ? NoteDirection.LEFT : NoteDirection.RIGHT,
                 // 1/4th of a frame of grace time, taken from osu-stable
-                TimeToNext = next.time - current.time - 4.16666651f,
+                TimeToNext = next.ActualTime - current.ActualTime - 1000f / 60f / 4,
                 DistanceInOsuCords = Math.Abs(next.X - current.X)
             };
-            metadata.HyperDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE || lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
-            metadata.DashDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE || lastDirection == metadata.Direction ? walkRange : halfCatcherWidth / 2);
+
+            var bpmScale = beatmap.GetBpmScale(next);
+            
+            metadata.HyperDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE && lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
+            metadata.DashDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE && lastDirection == metadata.Direction ? walkRange : halfCatcherWidth / 2);
             metadata.DistanceToHyper = (int) (metadata.TimeToNext - metadata.HyperDistanceToNext);
-            metadata.DistanceToDash = (int) (metadata.TimeToNext - metadata.DashDistanceToNext);
+            metadata.DistanceToDash = (int) (metadata.TimeToNext - metadata.DashDistanceToNext - metadata.TimeToNext * (bpmScale * 0.3));
 
             // Label the type of movement based on if the distance is dashable or walkable
-            if (metadata.DistanceToHyper <= 0) {
+            if (metadata.DistanceToHyper < 0) {
                 metadata.MovementType = MovementType.HYPERDASH;
-            } else if (metadata.DistanceToDash <= 0) {
+            } else if (metadata.DistanceToDash < 0) {
                 metadata.MovementType = MovementType.DASH;
             } else {
                 metadata.MovementType = MovementType.WALK;
@@ -253,11 +206,17 @@ namespace MapsetChecksCatch.Helper
             return 60000 / msPerBeat;
         }
 
+        private static double GetBpmScale(this Beatmap beatmap, CatchHitObject hitObject)
+        {
+            var timingLine = beatmap.GetTimingLine(hitObject.ActualTime);
+            var bpm = GetBeatsPerMinute(timingLine);
+
+            return 180 / bpm;
+        }
+
         private static bool IsEdgeMovement(Beatmap beatmap, CatchHitObject hitObject)
         {
-            var timingLine = beatmap.GetTimingLine(hitObject.time);
-            var bpm = GetBeatsPerMinute(timingLine);
-            var pixelsScale = (int) (180 / bpm * 10);
+            var pixelsScale = (int) beatmap.GetBpmScale(hitObject) * 10;
 
             switch (hitObject.MovementType)
             {

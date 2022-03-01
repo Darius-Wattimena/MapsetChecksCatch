@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MapsetChecksCatch.Checks.General;
@@ -61,7 +62,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
                 // only higher-snapped objects need to be going to the same direction so we can basic-dashes.
                 if (!dashObject.IsHigherSnapped(Beatmap.Difficulty.Normal)) continue;
                 
-                if (dashObject.Target.NoteDirection != dashObject.NoteDirection)
+                if (dashObject.Target.NoteDirection != dashObject.NoteDirection && Math.Abs(dashObject.Target.X - dashObject.X) > 20)
                 {
                     yield return new Issue(
                         GetTemplate("Warning"),

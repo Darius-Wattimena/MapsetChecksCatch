@@ -1,32 +1,40 @@
-﻿using System.Collections.Generic;
-using MapsetParser.objects;
+﻿using MapsetParser.objects;
 
 namespace MapsetChecksCatch.Helper
 {
     public sealed class CatchHitObject : HitObject
     {
-        public CatchHitObject(string[] anArgs, Beatmap beatmap, NoteType type) : base(anArgs, beatmap)
+        public CatchHitObject(string[] anArgs, Beatmap beatmap, NoteType type, HitObject original, double actualTime) : base(anArgs, beatmap)
         {
-            X = Position.X;
+            X = (int) Position.X;
             NoteType = type;
+            Original = original;
+            ActualTime = actualTime;
         }
 
+        public HitObject Original;
+        
         /// <summary>
-        /// The x coordinate in the osu editor
+        /// The actual time of the object, droplet times don't get set properly.
         /// </summary>
-        public float X;
+        public readonly double ActualTime;
+
+        /// <summary>
+        /// The x coordinate in the osu editor.
+        /// </summary>
+        public int X;
         
         /// <summary>
         /// The amount of distance needed to make this object a hyperdash.
         ///
-        /// The object is a hyperdash when the distance is 0 or below.
+        /// The object is a hyperdash when the distance is below 0.
         /// </summary>
         public int DistanceToHyperDash { get; set; }
         
         /// <summary>
         /// The amount of distance needed to make this object a dash.
         ///
-        /// The object is a dash when the distance is 0 or below.
+        /// The object is a dash when the distance is below 0.
         /// </summary>
         public int DistanceToDash { get; set; }
         
@@ -41,13 +49,6 @@ namespace MapsetChecksCatch.Helper
         /// The target of this object.
         /// </summary>
         public CatchHitObject Target { get; set; }
-        
-        /// <summary>
-        /// All the extra objects of this CatchHitObject.
-        /// 
-        /// As a slider it contains all the big droplets, slider repeats and tails.
-        /// </summary>
-        public List<CatchHitObject> Extras { get; set; } = new List<CatchHitObject>();
         
         public bool IsEdgeMovement { get; set; }
         
@@ -65,6 +66,8 @@ namespace MapsetChecksCatch.Helper
         /// The type of the current note. This is useful when having rules about specific slider parts.
         /// </summary>
         public NoteType NoteType { get; }
+
+        public bool IsSlider => SliderHead != null;
 
         /// <summary>
         /// Helper function to get the name used in the RC for this hit object.

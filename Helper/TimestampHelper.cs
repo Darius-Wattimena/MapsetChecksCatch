@@ -30,7 +30,7 @@ namespace MapsetChecksCatch.Helper
                 }
             }
 
-            return Timestamp.Get(timestampObjects.ToArray());
+            return Timestamp.Get(timestampObjects.Select(x => x.Original).ToArray());
         }
     }
 }
