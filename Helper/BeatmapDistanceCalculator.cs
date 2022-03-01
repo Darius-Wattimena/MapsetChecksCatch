@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using MapsetParser.objects;
 using MapsetParser.objects.hitobjects;
 
@@ -9,6 +10,33 @@ namespace MapsetChecksCatch.Helper
 {
     public static class BeatmapDistanceCalculator
     {
+        /// <summary>
+        /// The width of the catcher which can receive fruit. Equivalent to "catchMargin" in osu-stable.
+        /// </summary>
+        private const float ALLOWED_CATCH_RANGE = 0.8f;
+
+        /// <summary>
+        /// The size of the catcher at 1x scale.
+        /// </summary>
+        private const float BASE_SIZE = 106.75f;
+
+        /// <summary>
+        /// Calculates the scale of the catcher based off the provided beatmap difficulty.
+        /// </summary>
+        private static Vector2 CalculateScale(float circleSize) => new Vector2(1.0f - 0.7f * (circleSize - 5) / 5);
+
+        /// <summary>
+        /// Calculates the width of the area used for attempting catches in gameplay.
+        /// </summary>
+        /// <param name="scale">The scale of the catcher.</param>
+        private static float CalculateCatchWidth(Vector2 scale) => BASE_SIZE * Math.Abs(scale.X) * ALLOWED_CATCH_RANGE;
+
+        /// <summary>
+        /// Calculates the width of the area used for attempting catches in gameplay.
+        /// </summary>
+        /// <param name="difficulty">The beatmap difficulty.</param>
+        private static float CalculateCatchWidth(float circleSize) => CalculateCatchWidth(CalculateScale(circleSize));
+
         public static List<CatchHitObject> Calculate(Beatmap beatmap)
         {
             var hitObjects = GenerateCatchHitObjects(beatmap);
@@ -100,16 +128,22 @@ namespace MapsetChecksCatch.Helper
 
             allObjects.Sort((h1, h2) => h1.ActualTime.CompareTo(h2.ActualTime));
 
-            // Constant values taken from Modding Assistant as osu-lazer seems broken
-            // https://github.com/rorre/decompiled-MA/blob/master/Modding%20assistant/osu/DiffCalc/BeatmapDifficultyCalculatorFruits.cs
-            var circleSize = beatmap.difficultySettings.circleSize;
-            var catchDifficulty = (circleSize - 5.0) / 5.0;
-            var fruitWidth = (float) (64.0 * (1.0 - 0.699999988079071 * catchDifficulty)) / 128f;
-            var catcherWidth = 305f * fruitWidth * 0.7f;
-            var halfCatcherWidth = catcherWidth / 2;
+            // Using the way how lazer calculates hyperdashes as it seems to be in line with stable
+            double halfCatcherWidth = CalculateCatchWidth(beatmap.difficultySettings.circleSize) / 2;
+
+            halfCatcherWidth /= ALLOWED_CATCH_RANGE;
+            double baseWalkRange = halfCatcherWidth / 3;
+
             var lastDirection = NoteDirection.NONE;
             double dashRange = halfCatcherWidth;
-            double walkRange = halfCatcherWidth / 2;
+
+            // TODO Current walk range is referring to super strong edge walk, need to figure out to allow tap dashes for Cup/Salad rules
+            double walkRange = baseWalkRange;
+
+            // After a hyperdash we want to be more lenient with what the dash distance as player commonly overshoot
+            double hyperdashLeniency = 0.9;
+
+            var lastWasHyper = false;
 
             for (var i = 0; i < allObjects.Count - 1; i++)
             {
@@ -119,18 +153,22 @@ namespace MapsetChecksCatch.Helper
 
                 if (currentObject.NoteType == NoteType.SPINNER || nextObject.NoteType == NoteType.SPINNER)
                 {
+                    // TODO This might not be true, a hyper can be created on the previous note if the spinner end is not catchable
                     currentObject.MovementType = MovementType.WALK;
                     
                     // Reset everything when we have a spinner, ignore spinner hyperdashes
                     dashRange = halfCatcherWidth;
                     walkRange = halfCatcherWidth / 2;
                     lastDirection = NoteDirection.NONE;
+                    lastWasHyper = false;
                 }
                 else
                 {
-                    var objectMetadata = GenerateObjectMetadata(beatmap, currentObject, nextObject, lastDirection,
-                        dashRange, walkRange, halfCatcherWidth);
-                    currentObject.DistanceToHyperDash = objectMetadata.DistanceToHyper;
+                    var objectMetadata = GenerateObjectMetadata(
+                        beatmap, currentObject, nextObject, lastDirection, dashRange, walkRange, 
+                        halfCatcherWidth, baseWalkRange, hyperdashLeniency, lastWasHyper
+                    );
+                    currentObject.DistanceToHyper = objectMetadata.DistanceToHyper;
                     currentObject.DistanceToDash = objectMetadata.DistanceToDash;
                     currentObject.MovementType = objectMetadata.MovementType;
                 
@@ -148,17 +186,18 @@ namespace MapsetChecksCatch.Helper
 
                     if (objectMetadata.MovementType == MovementType.DASH)
                     {
-                        walkRange = halfCatcherWidth / 2;
+                        walkRange = baseWalkRange;
                     }
                     else
                     {
-                        walkRange = Clamp(objectMetadata.DistanceToDash, 0, halfCatcherWidth / 2);
+                        walkRange = Clamp(objectMetadata.DistanceToDash, 0, baseWalkRange);
                     }
                 
                     currentObject.NoteDirection = objectMetadata.Direction;
                     currentObject.IsEdgeMovement = IsEdgeMovement(beatmap, currentObject);
 
                     lastDirection = objectMetadata.Direction;
+                    lastWasHyper = objectMetadata.MovementType == MovementType.HYPERDASH;
                 }
             }
         }
@@ -170,7 +209,10 @@ namespace MapsetChecksCatch.Helper
             NoteDirection lastDirection, 
             double dashRange, 
             double walkRange,
-            double halfCatcherWidth
+            double halfCatcherWidth,
+            double baseWalkRange,
+            double hyperdashLeniency,
+            bool lastWasHyper
         ) {
             var metadata = new ObjectMetadata {
                 Direction = current.X == next.X ? NoteDirection.NONE : current.X > next.X ? NoteDirection.LEFT : NoteDirection.RIGHT,
@@ -180,11 +222,23 @@ namespace MapsetChecksCatch.Helper
             };
 
             var bpmScale = beatmap.GetBpmScale(next);
+
+            double actualWalkRange;
+
+            if (lastWasHyper)
+            {
+                actualWalkRange = (lastDirection == metadata.Direction ? walkRange : baseWalkRange) *
+                                  hyperdashLeniency;
+            }
+            else
+            {
+                actualWalkRange = lastDirection == metadata.Direction ? walkRange : baseWalkRange;
+            }
             
-            metadata.HyperDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE && lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
-            metadata.DashDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE && lastDirection == metadata.Direction ? walkRange : halfCatcherWidth / 2);
-            metadata.DistanceToHyper = (int) (metadata.TimeToNext - metadata.HyperDistanceToNext);
-            metadata.DistanceToDash = (int) (metadata.TimeToNext - metadata.DashDistanceToNext - metadata.TimeToNext * (bpmScale * 0.3));
+            metadata.HyperDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE || lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
+            metadata.DashDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE ? actualWalkRange : baseWalkRange);
+            metadata.DistanceToHyper = (int) Math.Floor((float) (metadata.TimeToNext - metadata.HyperDistanceToNext));
+            metadata.DistanceToDash = (int) Math.Floor((float) (metadata.TimeToNext - metadata.DashDistanceToNext - (metadata.TimeToNext * (bpmScale * 0.3))));
 
             // Label the type of movement based on if the distance is dashable or walkable
             if (metadata.DistanceToHyper < 0) {
@@ -223,7 +277,7 @@ namespace MapsetChecksCatch.Helper
                 case MovementType.WALK:
                     return hitObject.DistanceToDash <= pixelsScale;
                 case MovementType.DASH:
-                    return hitObject.DistanceToHyperDash <= pixelsScale;
+                    return hitObject.DistanceToHyper <= pixelsScale;
                 default:
                     return false;
             }

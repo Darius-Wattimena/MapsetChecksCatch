@@ -41,8 +41,8 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
             {
                 { "Dash",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} {1} is a dash.",
-                            "timestamp - ", "object")
+                            "{0} There is a dash between the {1} and {2}.",
+                            "timestamp - ", "object", "target object")
                         .WithCause(
                             "Distance between the two objects is too high, triggering a dash distance")
                 }
@@ -61,7 +61,8 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
                         GetTemplate("Dash"),
                         beatmap,
                         TimestampHelper.Get(catchObject, catchObject.Target),
-                        catchObject.GetNoteTypeName()
+                        catchObject.GetNoteTypeName(),
+                        catchObject.Target.GetNoteTypeName()
                     ).ForDifficulties(Beatmap.Difficulty.Easy);
                 }
             }

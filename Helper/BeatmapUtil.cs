@@ -18,7 +18,7 @@ namespace MapsetChecksCatch.Helper
 
         public static float GetCurrentTriggerDistance(this CatchHitObject currentObject)
         {
-            return GetTriggerDistance(currentObject) / currentObject.DistanceToHyperDash;
+            return GetTriggerDistance(currentObject) / currentObject.DistanceToHyper;
         }
 
         public static float GetTriggerDistance(this CatchHitObject currentObject)
@@ -32,7 +32,7 @@ namespace MapsetChecksCatch.Helper
                 _ => 0f
             };
 
-            if (xDistance > 0f) return xDistance - Math.Abs(currentObject.DistanceToHyperDash);
+            if (xDistance > 0f) return xDistance - Math.Abs(currentObject.DistanceToHyper);
 
             return 0f;
         }
