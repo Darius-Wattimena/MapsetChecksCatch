@@ -60,7 +60,7 @@ namespace MapsetChecksCatch.Checks.Compose.Salad
                 if (dashObject.Target == null) continue;
                 
                 // only higher-snapped objects need to be going to the same direction so we can basic-dashes.
-                if (!dashObject.IsHigherSnapped(Beatmap.Difficulty.Normal)) continue;
+                if (dashObject.IsBasicSnapped(Beatmap.Difficulty.Normal)) continue;
                 
                 if (dashObject.Target.NoteDirection != dashObject.NoteDirection && Math.Abs(dashObject.Target.X - dashObject.X) > 20)
                 {

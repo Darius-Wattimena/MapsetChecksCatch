@@ -63,7 +63,7 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
         {
             var catchObjects = CheckBeatmapSetDistanceCalculation.GetBeatmapDistances(beatmap);
             CatchHitObject basicSnappedHyperdash = null;
-            var sliderObjects = new List<CatchHitObject>();
+            var sliderHyperdashObjects = new List<CatchHitObject>();
 
             foreach (var currentObject in catchObjects)
             {
@@ -71,8 +71,8 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
 
                 if (basicSnappedHyperdash != null)
                 {
-                    if (currentObject.MovementType == MovementType.HYPERDASH 
-                        && !currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane) 
+                    if (currentObject.MovementType == MovementType.HYPERDASH
+                        && currentObject.IsBasicSnapped(Beatmap.Difficulty.Insane)
                         && !basicSnappedHyperdash.IsSameSnap(currentObject))
                     {
                         yield return new Issue(
@@ -80,43 +80,44 @@ namespace MapsetChecksCatch.Checks.Compose.Rain
                             beatmap,
                             TimestampHelper.Get(basicSnappedHyperdash, currentObject)
                         ).ForDifficulties(Beatmap.Difficulty.Insane);
+                    } else
+                    {
+                        basicSnappedHyperdash = null;
                     }
-
-                    basicSnappedHyperdash = null;
                 }
                 
                 if (currentObject.NoteType == NoteType.HEAD)
                 {
-                    // Check the if the last slider had more then 2 objects with hypers before continuing
-                    if (sliderObjects.Count > 2)
+                    // Check if the last slider had more then 2 objects with hypers before continuing
+                    if (sliderHyperdashObjects.Count > 2)
                     {
                         yield return new Issue(
                             GetTemplate("SliderHyperdashes"),
                             beatmap,
-                            TimestampHelper.Get(sliderObjects.First()),
-                            sliderObjects.Count
+                            TimestampHelper.Get(sliderHyperdashObjects.First()),
+                            sliderHyperdashObjects.Count
                         ).ForDifficulties(Beatmap.Difficulty.Insane);
                     }
                     
-                    sliderObjects = new List<CatchHitObject>();
+                    sliderHyperdashObjects = new List<CatchHitObject>();
                     
                     if (currentObject.MovementType == MovementType.HYPERDASH
-                        && !currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane))
+                        && currentObject.IsBasicSnapped(Beatmap.Difficulty.Insane))
                     {
-                        sliderObjects.Add(currentObject);
+                        sliderHyperdashObjects.Add(currentObject);
                     }
                 } 
                 else if (currentObject.IsSlider)
                 {
                     if (currentObject.MovementType == MovementType.HYPERDASH 
-                        && !currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane))
+                        && currentObject.IsBasicSnapped(Beatmap.Difficulty.Insane))
                     {
-                        sliderObjects.Add(currentObject);
+                        sliderHyperdashObjects.Add(currentObject);
                     }
                 }
 
                 if (currentObject.MovementType == MovementType.HYPERDASH 
-                    && !currentObject.IsHigherSnapped(Beatmap.Difficulty.Insane))
+                    && currentObject.IsBasicSnapped(Beatmap.Difficulty.Insane))
                 {
                     basicSnappedHyperdash = currentObject;
                 }

@@ -46,12 +46,24 @@ namespace MapsetChecksCatch.Helper
         /// <returns>True if the current object and the other object are the same snap</returns>
         public static bool IsSameSnap(this CatchHitObject currentObject, CatchHitObject otherObject)
         {
-            const int snapMargin = 4;
-            var range = Enumerable.Range(
-                currentObject.TimeToTarget - snapMargin,
-                currentObject.TimeToTarget + snapMargin);
+            const double snapMargin = 4.0;
+            var snapMin = currentObject.TimeToTarget - snapMargin;
+            var snapMax = currentObject.TimeToTarget + snapMargin;
 
-            return range.Contains(otherObject.TimeToTarget);
+            return otherObject.TimeToTarget >= snapMin && otherObject.TimeToTarget <= snapMax;
+        }
+
+        public static bool IsBasicSnapped(this CatchHitObject currentObject, Beatmap.Difficulty difficulty)
+        {
+            var ms = currentObject.TimeToTarget;
+
+            return difficulty switch
+            {
+                Beatmap.Difficulty.Normal => ms >= 250,
+                Beatmap.Difficulty.Hard => ms >= (currentObject.MovementType == MovementType.HYPERDASH ? 250 : 125),
+                Beatmap.Difficulty.Insane => ms >= 125,
+                _ => false
+            };
         }
 
         /// <summary>
@@ -71,9 +83,9 @@ namespace MapsetChecksCatch.Helper
 
             return difficulty switch
             {
-                Beatmap.Difficulty.Normal => ms < 250,
-                Beatmap.Difficulty.Hard => ms < (currentObject.MovementType == MovementType.HYPERDASH ? 250 : 125),
-                Beatmap.Difficulty.Insane => ms < 125,
+                Beatmap.Difficulty.Normal => ms < 250 && ms >= 125,
+                Beatmap.Difficulty.Hard => ms < (currentObject.MovementType == MovementType.HYPERDASH ? 250 : 125) && ms >= (currentObject.MovementType == MovementType.HYPERDASH ? 125 : 62),
+                Beatmap.Difficulty.Insane => ms < 125 && ms >= 62,
                 _ => false
             };
         }

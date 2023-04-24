@@ -173,7 +173,7 @@ namespace MapsetChecksCatch.Helper
                     currentObject.MovementType = objectMetadata.MovementType;
                 
                     // Cast to an int since osu seems to be doing something similar
-                    currentObject.TimeToTarget = (int) objectMetadata.TimeToNext;
+                    currentObject.TimeToTarget = objectMetadata.TimeToNext;
 
                     if (objectMetadata.MovementType == MovementType.HYPERDASH)
                     {
@@ -215,13 +215,13 @@ namespace MapsetChecksCatch.Helper
             bool lastWasHyper
         ) {
             var metadata = new ObjectMetadata {
-                Direction = current.X == next.X ? NoteDirection.NONE : current.X > next.X ? NoteDirection.LEFT : NoteDirection.RIGHT,
+                Direction = Math.Abs(current.X - next.X) < 0.5 ? NoteDirection.NONE : current.X > next.X ? NoteDirection.LEFT : NoteDirection.RIGHT,
                 // 1/4th of a frame of grace time, taken from osu-stable
                 TimeToNext = next.ActualTime - current.ActualTime - 1000f / 60f / 4,
                 DistanceInOsuCords = Math.Abs(next.X - current.X)
             };
 
-            var bpmScale = beatmap.GetBpmScale(next);
+            double bpmScale = beatmap.GetBpmScale(next);
 
             double actualWalkRange;
 
@@ -237,13 +237,15 @@ namespace MapsetChecksCatch.Helper
             
             metadata.HyperDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE || lastDirection == metadata.Direction ? dashRange : halfCatcherWidth);
             metadata.DashDistanceToNext = metadata.DistanceInOsuCords - (lastDirection != NoteDirection.NONE ? actualWalkRange : baseWalkRange);
-            metadata.DistanceToHyper = (int) Math.Floor((float) (metadata.TimeToNext - metadata.HyperDistanceToNext));
-            metadata.DistanceToDash = (int) Math.Floor((float) (metadata.TimeToNext - metadata.DashDistanceToNext - (metadata.TimeToNext * (bpmScale * 0.3))));
+            metadata.DistanceToHyper = (float)(metadata.TimeToNext - metadata.HyperDistanceToNext);
+            metadata.DistanceToDash = (float)(metadata.TimeToNext - metadata.DashDistanceToNext - metadata.TimeToNext * (bpmScale * 0.1));
+
+            var timeBetween = current.time - next.time;
 
             // Label the type of movement based on if the distance is dashable or walkable
-            if (metadata.DistanceToHyper < 0) {
+            if (metadata.DistanceToHyper <= 0) {
                 metadata.MovementType = MovementType.HYPERDASH;
-            } else if (metadata.DistanceToDash < 0) {
+            } else if (metadata.DistanceToDash <= 0 && timeBetween > 50) {
                 metadata.MovementType = MovementType.DASH;
             } else {
                 metadata.MovementType = MovementType.WALK;
@@ -260,22 +262,35 @@ namespace MapsetChecksCatch.Helper
             return 60000 / msPerBeat;
         }
 
-        private static double GetBpmScale(this Beatmap beatmap, CatchHitObject hitObject)
+        private static double GetBpm(this Beatmap beatmap, CatchHitObject hitObject)
         {
             var timingLine = beatmap.GetTimingLine(hitObject.ActualTime);
             var bpm = GetBeatsPerMinute(timingLine);
 
-            return 180 / bpm;
+            return bpm;
+        }
+
+        private static double GetBpmScale(this Beatmap beatmap, CatchHitObject hitObject)
+        {
+            return 180 / beatmap.GetBpm(hitObject);
         }
 
         private static bool IsEdgeMovement(Beatmap beatmap, CatchHitObject hitObject)
         {
+            if (hitObject.MovementType == MovementType.HYPERDASH)
+            {
+                return false;
+            }
+
+            // 1,44 * bpm
+            var comfyDash = 1.44 * beatmap.GetBpm(hitObject);
             var pixelsScale = (int) beatmap.GetBpmScale(hitObject) * 10;
 
             switch (hitObject.MovementType)
             {
                 case MovementType.WALK:
-                    return hitObject.DistanceToDash <= pixelsScale;
+                    var xDistance = Math.Abs(hitObject.X - hitObject.Target.X);
+                    return xDistance >= comfyDash * beatmap.GetBpmScale(hitObject);
                 case MovementType.DASH:
                     return hitObject.DistanceToHyper <= pixelsScale;
                 default:

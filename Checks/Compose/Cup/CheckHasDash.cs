@@ -18,6 +18,10 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
             Category = "Compose",
             Message = "[C] Contains dashes.",
             Modes = new[] { Beatmap.Mode.Catch },
+            Difficulties = new []
+            {
+                Beatmap.Difficulty.Easy
+            },
             Author = "Greaper",
 
             Documentation = new Dictionary<string, string>

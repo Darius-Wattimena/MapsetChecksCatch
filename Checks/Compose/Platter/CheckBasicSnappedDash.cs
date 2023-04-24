@@ -60,7 +60,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
             {
                 if (currentObject.MovementType == MovementType.DASH)
                 {
-                    if (!currentObject.IsHigherSnapped(Beatmap.Difficulty.Hard))
+                    if (currentObject.IsBasicSnapped(Beatmap.Difficulty.Hard))
                     {
                         consecutiveObjects.Add(currentObject);
                     }

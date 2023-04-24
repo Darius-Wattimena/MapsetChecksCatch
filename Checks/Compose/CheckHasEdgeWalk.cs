@@ -54,7 +54,7 @@ namespace MapsetChecksCatch.Checks.Compose
             return new Issue(
                 template,
                 beatmap,
-                Timestamp.Get(currentObject.time)
+                TimestampHelper.Get(currentObject, currentObject.Target)
             ).ForDifficulties(difficulties);
         }
 
@@ -65,11 +65,11 @@ namespace MapsetChecksCatch.Checks.Compose
             var issueObjects = new List<CatchHitObject>();
 
             foreach (var currentObject in catchObjects
-                .Where(currentObject => currentObject.type != HitObject.Type.Spinner && currentObject.MovementType != MovementType.DASH))
+                .Where(currentObject => currentObject.type != HitObject.Type.Spinner && currentObject.MovementType == MovementType.WALK))
             {
                 var dashDistance = currentObject.DistanceToDash;
 
-                if (dashDistance > 0)
+                if (dashDistance <= 5)
                 {
                     issueObjects.Add(currentObject);
                 }
@@ -77,7 +77,7 @@ namespace MapsetChecksCatch.Checks.Compose
 
             foreach (var issueObject in issueObjects)
             {
-                if (issueObject.DistanceToDash < 20)
+                if (issueObject.IsEdgeMovement)
                 {
                     yield return EdgeWalkIssue(GetTemplate("EdgeWalk"), beatmap, issueObject,
                         Beatmap.Difficulty.Easy, Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard);

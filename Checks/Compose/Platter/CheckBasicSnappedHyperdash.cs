@@ -70,7 +70,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                     var hyperTriggerDistance = (int) currentObject.GetTriggerDistance();
                     var currentTriggerDistance = (int) currentObject.GetCurrentTriggerDistance();
                     
-                    if (!currentObject.IsHigherSnapped(Beatmap.Difficulty.Hard))
+                    if (currentObject.IsBasicSnapped(Beatmap.Difficulty.Hard))
                     {
                         // Check if next is antiflow
                         if (currentObject.NoteDirection != currentObject.Target.NoteDirection)
@@ -91,7 +91,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                                     break;
                                 case MovementType.DASH:
                                     // Otherwise only 1.1 if followed by a basic-snapped dash
-                                    if (!currentObject.Target.IsHigherSnapped(Beatmap.Difficulty.Hard) && hyperTriggerDistance * 1.1 < currentTriggerDistance)
+                                    if (currentObject.Target.IsBasicSnapped(Beatmap.Difficulty.Hard) && hyperTriggerDistance * 1.1 < currentTriggerDistance)
                                     {
                                         yield return new Issue(
                                             GetTemplate("AntiFlowDash"),

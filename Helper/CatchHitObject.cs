@@ -6,7 +6,7 @@ namespace MapsetChecksCatch.Helper
     {
         public CatchHitObject(string[] anArgs, Beatmap beatmap, NoteType type, HitObject original, double actualTime) : base(anArgs, beatmap)
         {
-            X = (int) Position.X;
+            X = Position.X;
             NoteType = type;
             Original = original;
             ActualTime = actualTime;
@@ -22,26 +22,26 @@ namespace MapsetChecksCatch.Helper
         /// <summary>
         /// The x coordinate in the osu editor.
         /// </summary>
-        public int X;
+        public readonly float X;
         
         /// <summary>
         /// The amount of distance needed to make this object a hyperdash.
         ///
         /// The object is a hyperdash when the distance is below 0.
         /// </summary>
-        public int DistanceToHyper { get; set; }
+        public float DistanceToHyper { get; set; }
         
         /// <summary>
         /// The amount of distance needed to make this object a dash.
         ///
         /// The object is a dash when the distance is below 0.
         /// </summary>
-        public int DistanceToDash { get; set; }
+        public float DistanceToDash { get; set; }
         
         /// <summary>
         /// Time between the this object and the its target.
         /// </summary>
-        public int TimeToTarget { get; set; }
+        public double TimeToTarget { get; set; }
         
         public CatchHitObject SliderHead { get; set; }
         
