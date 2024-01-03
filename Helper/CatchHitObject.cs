@@ -4,20 +4,14 @@ namespace MapsetChecksCatch.Helper
 {
     public sealed class CatchHitObject : HitObject
     {
-        public CatchHitObject(string[] anArgs, Beatmap beatmap, NoteType type, HitObject original, double actualTime) : base(anArgs, beatmap)
+        public CatchHitObject(string[] anArgs, Beatmap beatmap, NoteType type, HitObject original) : base(anArgs, beatmap)
         {
             X = Position.X;
             NoteType = type;
             Original = original;
-            ActualTime = actualTime;
         }
 
         public HitObject Original;
-        
-        /// <summary>
-        /// The actual time of the object, droplet times don't get set properly.
-        /// </summary>
-        public readonly double ActualTime;
 
         /// <summary>
         /// The x coordinate in the osu editor.

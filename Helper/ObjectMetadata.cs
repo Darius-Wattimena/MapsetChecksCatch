@@ -14,16 +14,6 @@
         public float DistanceInOsuCords { get; set; }
 
         /// <summary>
-        /// Distance based on the osu cords and direction
-        /// </summary>
-        public double HyperDistanceToNext { get; set; }
-
-        /// <summary>
-        /// Distance based on the osu cords and direction
-        /// </summary>
-        public double DashDistanceToNext { get; set; }
-
-        /// <summary>
         /// The amount extra needed distance until a Hyper fruit is generated
         /// When the value is below 0 it means a hyper is generated
         /// Otherwise it must be a dash or walk
