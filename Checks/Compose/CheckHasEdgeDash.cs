@@ -49,6 +49,13 @@ namespace MapsetChecksCatch.Checks.Compose
         {
             return new Dictionary<string, IssueTemplate>
             {
+                { "StrongDash",
+                    new IssueTemplate(Issue.Level.Minor,
+                            "{0} {1} is {2} pixel(s) away from being a hyper, this dash might be too strong.",
+                            "timestamp - ", "object", "x")
+                        .WithCause(
+                            "X amount of pixels off to become a hyperdash.")
+                },
                 { "EdgeDashMinor",
                     new IssueTemplate(Issue.Level.Minor,
                             "{0} {1} is {2} pixel(s) away from being a hyper, make sure this is intended.",
@@ -99,17 +106,43 @@ namespace MapsetChecksCatch.Checks.Compose
                 }
             }
 
-            foreach (var issueObject in issueObjects.Where(issueObject => issueObject.IsEdgeMovement))
+            foreach (var issueObject in issueObjects)
             {
-                yield return EdgeDashIssue(GetTemplate("EdgeDash"), beatmap, issueObject,
-                    Beatmap.Difficulty.Insane);
+                if (issueObject.IsEdgeMovement)
+                {
+                    yield return EdgeDashIssue(GetTemplate("EdgeDash"), beatmap, issueObject,
+                        Beatmap.Difficulty.Insane);
 
-                yield return EdgeDashIssue(GetTemplate("EdgeDashMinor"), beatmap, issueObject,
-                    Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra);
+                    yield return EdgeDashIssue(GetTemplate("EdgeDashMinor"), beatmap, issueObject,
+                        Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra);
                     
-                yield return EdgeDashIssue(GetTemplate("EdgeDashProblem"), beatmap, issueObject,
-                    Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard);
+                    yield return EdgeDashIssue(GetTemplate("EdgeDashProblem"), beatmap, issueObject,
+                        Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard);
+                }
+                else
+                {
+                    var isStrongDash = IsStrongDash(beatmap, issueObject);
+
+                    if (isStrongDash)
+                    {
+                        yield return EdgeDashIssue(GetTemplate("StrongDash"), beatmap, issueObject,
+                            Beatmap.Difficulty.Normal, Beatmap.Difficulty.Hard, Beatmap.Difficulty.Insane,
+                            Beatmap.Difficulty.Expert, Beatmap.Difficulty.Ultra);
+                    }
+                }
             }
+        }
+        
+        private static bool IsStrongDash(Beatmap beatmap, CatchHitObject hitObject)
+        {
+            if (hitObject.MovementType == MovementType.HYPERDASH)
+            {
+                return false;
+            }
+
+            var pixelsScale = (int) beatmap.GetBpmScale(hitObject) * 60;
+
+            return hitObject.DistanceToHyper <= pixelsScale;
         }
     }
 }
