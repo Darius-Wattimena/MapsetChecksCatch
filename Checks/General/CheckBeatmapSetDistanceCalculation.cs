@@ -1,10 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using MapsetChecksCatch.Helper;
-using MapsetParser.objects;
-using MapsetVerifierFramework.objects;
-using MapsetVerifierFramework.objects.attributes;
-using MapsetVerifierFramework.objects.metadata;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Framework.Objects;
+using MapsetVerifier.Framework.Objects.Attributes;
+using MapsetVerifier.Framework.Objects.Metadata;
 
 namespace MapsetChecksCatch.Checks.General
 {
@@ -53,7 +53,7 @@ namespace MapsetChecksCatch.Checks.General
 
         public override IEnumerable<Issue> GetIssues(BeatmapSet beatmapSet)
         {
-            beatmapSet.beatmaps.ForEach(beatmap =>
+            beatmapSet.Beatmaps.ForEach(beatmap =>
             {
                 var calculatedBeatmap = BeatmapDistanceCalculator.Calculate(beatmap);
                 var beatmapIdentifier = BeatmapUtil.GetBeatmapIdentifier(beatmap);

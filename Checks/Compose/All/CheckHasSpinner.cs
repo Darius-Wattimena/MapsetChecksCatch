@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using MapsetParser.objects;
-using MapsetParser.objects.hitobjects;
-using MapsetVerifierFramework.objects;
-using MapsetVerifierFramework.objects.attributes;
-using MapsetVerifierFramework.objects.metadata;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Parser.Objects.HitObjects;
+using MapsetVerifier.Framework.Objects;
+using MapsetVerifier.Framework.Objects.Attributes;
+using MapsetVerifier.Framework.Objects.Metadata;
 
 namespace MapsetChecksCatch.Checks.Compose.All
 {
@@ -51,7 +51,7 @@ namespace MapsetChecksCatch.Checks.Compose.All
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
-            if (beatmap.hitObjects.All(x => !(x is Spinner)))
+            if (beatmap.HitObjects.All(x => !(x is Spinner)))
             {
                 yield return new Issue(GetTemplate("HasSpinner"), beatmap);
             }

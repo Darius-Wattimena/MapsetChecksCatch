@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using MapsetParser.objects;
+using MapsetVerifier.Parser.Objects;
 
 namespace MapsetChecksCatch.Helper
 {
@@ -8,12 +8,27 @@ namespace MapsetChecksCatch.Helper
     {
         public static string GetBeatmapIdentifier(Beatmap beatmap)
         {
-            var difficulty = beatmap?.metadataSettings?.version ?? "";
-            var creator = beatmap?.metadataSettings?.creator ?? "";
-            var artist = beatmap?.metadataSettings?.artist ?? "";
-            var title = beatmap?.metadataSettings?.title ?? "";
+            var difficulty = beatmap?.MetadataSettings?.version ?? "";
+            var creator = beatmap?.MetadataSettings?.creator ?? "";
+            var artist = beatmap?.MetadataSettings?.artist ?? "";
+            var title = beatmap?.MetadataSettings?.title ?? "";
 
             return $"d={difficulty}c={creator}a={artist}t={title}";
+        }
+        
+        public static string GetDebugInfo(this CatchHitObject currentObject)
+        {
+            return $"DEBUG Distance (type = {currentObject.MovementType} dash = {currentObject.DistanceToDash} hyper = {currentObject.DistanceToHyper} edge {currentObject.IsEdgeMovement})";
+        }
+        
+        public static float GetCurrentDashDistance(this CatchHitObject currentObject)
+        {
+            return GetDashTriggerDistance(currentObject) / currentObject.DistanceToDash;
+        }
+        
+        public static float GetDashTriggerDistance(this CatchHitObject currentObject)
+        {
+            return GetTriggerDistance(currentObject, MovementType.DASH, currentObject.DistanceToDash);
         }
 
         public static float GetCurrentTriggerDistance(this CatchHitObject currentObject)
@@ -23,7 +38,12 @@ namespace MapsetChecksCatch.Helper
 
         public static float GetTriggerDistance(this CatchHitObject currentObject)
         {
-            if (currentObject.MovementType != MovementType.HYPERDASH) return 0f;
+            return GetTriggerDistance(currentObject, MovementType.HYPERDASH, currentObject.DistanceToHyper);
+        }
+        
+        private static float GetTriggerDistance(CatchHitObject currentObject, MovementType movementType, float distanceTo)
+        {
+            if (currentObject.MovementType != movementType) return 0f;
 
             var xDistance = currentObject.NoteDirection switch
             {
@@ -32,7 +52,7 @@ namespace MapsetChecksCatch.Helper
                 _ => 0f
             };
 
-            if (xDistance > 0f) return xDistance - Math.Abs(currentObject.DistanceToHyper);
+            if (xDistance > 0f) return xDistance - Math.Abs(distanceTo);
 
             return 0f;
         }

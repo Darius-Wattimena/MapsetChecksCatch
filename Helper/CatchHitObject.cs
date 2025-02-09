@@ -1,4 +1,4 @@
-﻿using MapsetParser.objects;
+﻿using MapsetVerifier.Parser.Objects;
 
 namespace MapsetChecksCatch.Helper
 {

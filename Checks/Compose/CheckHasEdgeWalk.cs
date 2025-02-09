@@ -2,11 +2,10 @@
 using System.Linq;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
-using MapsetParser.objects;
-using MapsetParser.statics;
-using MapsetVerifierFramework.objects;
-using MapsetVerifierFramework.objects.attributes;
-using MapsetVerifierFramework.objects.metadata;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Framework.Objects;
+using MapsetVerifier.Framework.Objects.Attributes;
+using MapsetVerifier.Framework.Objects.Metadata;
 
 namespace MapsetChecksCatch.Checks.Compose
 {
@@ -65,7 +64,7 @@ namespace MapsetChecksCatch.Checks.Compose
             var issueObjects = new List<CatchHitObject>();
 
             foreach (var currentObject in catchObjects
-                .Where(currentObject => currentObject.type != HitObject.Type.Spinner && currentObject.MovementType == MovementType.WALK))
+                .Where(currentObject => currentObject.type != HitObject.Types.Spinner && currentObject.MovementType == MovementType.WALK))
             {
                 var dashDistance = currentObject.DistanceToDash;
 

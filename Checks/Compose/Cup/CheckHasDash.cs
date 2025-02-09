@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
-using MapsetParser.objects;
-using MapsetParser.statics;
-using MapsetVerifierFramework.objects;
-using MapsetVerifierFramework.objects.attributes;
-using MapsetVerifierFramework.objects.metadata;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Parser.Statics;
+using MapsetVerifier.Framework.Objects;
+using MapsetVerifier.Framework.Objects.Attributes;
+using MapsetVerifier.Framework.Objects.Metadata;
 
 namespace MapsetChecksCatch.Checks.Compose.Cup
 {
@@ -34,7 +34,7 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
                 {
                     "Reasoning",
                     @"
-                    This is to ensure an easy starting experience to beginner players."
+                    This is to ensure beginners have an easy starting experience."
                 }
             }
         };
@@ -45,8 +45,8 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
             {
                 { "Dash",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} There is a dash between the {1} and {2}.",
-                            "timestamp - ", "object", "target object")
+                            "{0} There is a dash between the {1} and {2} {3}.",
+                            "timestamp - ", "object", "target object", "Debug info")
                         .WithCause(
                             "Distance between the two objects is too high, triggering a dash distance")
                 }
@@ -66,7 +66,8 @@ namespace MapsetChecksCatch.Checks.Compose.Cup
                         beatmap,
                         TimestampHelper.Get(catchObject, catchObject.Target),
                         catchObject.GetNoteTypeName(),
-                        catchObject.Target.GetNoteTypeName()
+                        catchObject.Target.GetNoteTypeName(),
+                        catchObject.GetDebugInfo()
                     ).ForDifficulties(Beatmap.Difficulty.Easy);
                 }
             }

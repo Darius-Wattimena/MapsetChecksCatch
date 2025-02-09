@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MapsetParser.objects;
-using MapsetParser.statics;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Parser.Statics;
 
 namespace MapsetChecksCatch.Helper
 {

@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
-using MapsetParser.objects;
-using MapsetParser.statics;
-using MapsetVerifierFramework.objects;
-using MapsetVerifierFramework.objects.attributes;
-using MapsetVerifierFramework.objects.metadata;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Parser.Statics;
+using MapsetVerifier.Framework.Objects;
+using MapsetVerifier.Framework.Objects.Attributes;
+using MapsetVerifier.Framework.Objects.Metadata;
 
 namespace MapsetChecksCatch.Checks.Compose
 {
@@ -79,7 +79,7 @@ namespace MapsetChecksCatch.Checks.Compose
                         yield return new Issue(
                             GetTemplate("HyperdashSnap"),
                             beatmap,
-                            Timestamp.Get(currentObject.time),
+                            TimestampHelper.Get(lastCheckedObject, currentObject),
                             125,
                             snap
                         ).ForDifficulties(Beatmap.Difficulty.Hard);
@@ -90,7 +90,7 @@ namespace MapsetChecksCatch.Checks.Compose
                         yield return new Issue(
                             GetTemplate("HyperdashSnap"),
                             beatmap,
-                            Timestamp.Get(currentObject.time),
+                            TimestampHelper.Get(lastCheckedObject, currentObject),
                             62,
                             snap
                         ).ForDifficulties(Beatmap.Difficulty.Insane);

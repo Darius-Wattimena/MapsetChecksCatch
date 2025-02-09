@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Numerics;
-using MapsetParser.objects;
-using MapsetParser.objects.hitobjects;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Parser.Objects.HitObjects;
 
 namespace MapsetChecksCatch.Helper
 {
@@ -32,24 +34,21 @@ namespace MapsetChecksCatch.Helper
 
         // After a hyperdash we want to be more lenient with what the dash distance as player commonly overshoot
         private const double HyperdashLeniency = 0.95;
+
+        private static float CalculateCatchWidth(float circleSize) => BASE_SIZE * Math.Abs(CalculateScale(circleSize).X) * ALLOWED_CATCH_RANGE;
+
+        private static float CalculateScaleFromCircleSize(float circleSize)
+        {
+            return (float)(1.0f - 0.7f * DifficultyRange(circleSize)) / 2 * 1;
+        }
         
         /// <summary>
         /// Calculates the scale of the catcher based off the provided beatmap difficulty.
         /// </summary>
-        private static Vector2 CalculateScale(float circleSize) => new Vector2(1.0f - 0.7f * (circleSize - 5) / 5);
-
-        /// <summary>
-        /// Calculates the width of the area used for attempting catches in gameplay.
-        /// </summary>
-        /// <param name="scale">The scale of the catcher.</param>
-        private static float CalculateCatchWidth(Vector2 scale) => BASE_SIZE * Math.Abs(scale.X) * ALLOWED_CATCH_RANGE;
-
-        /// <summary>
-        /// Calculates the width of the area used for attempting catches in gameplay.
-        /// </summary>
-        /// <param name="difficulty">The beatmap difficulty.</param>
-        private static float CalculateCatchWidth(float circleSize) => CalculateCatchWidth(CalculateScale(circleSize));
-
+        private static Vector2 CalculateScale(float circleSize) => new Vector2(CalculateScaleFromCircleSize(circleSize) * 2);
+        
+        static double DifficultyRange(double difficulty) => (difficulty - 5) / 5;
+        
         public static List<CatchHitObject> Calculate(Beatmap beatmap)
         {
             var hitObjects = GenerateCatchHitObjects(beatmap);
@@ -59,7 +58,7 @@ namespace MapsetChecksCatch.Helper
 
         private static List<CatchHitObject> GenerateCatchHitObjects(Beatmap beatmap)
         {
-            var mapObjects = beatmap.hitObjects;
+            var mapObjects = beatmap.HitObjects;
             var objects = new List<CatchHitObject>();
 
             // Get all the catch objects from the spinners
@@ -81,10 +80,10 @@ namespace MapsetChecksCatch.Helper
                 }
 
                 // TODO doesn't seem to work?
-                var actualSliderTicks = mapSliderObject.sliderTickTimes.Where(tickTime =>
+                var actualSliderTicks = mapSliderObject.SliderTickTimes.Where(tickTime =>
                     objectExtras.All(extra => !IsSimilarTime(tickTime, extra.time)));
 
-                objectExtras.AddRange(mapSliderObject.sliderTickTimes.Select(sliderTick =>
+                objectExtras.AddRange(mapSliderObject.SliderTickTimes.Select(sliderTick =>
                     CreateObjectExtra(beatmap, sliderObject, mapSliderObject, sliderTick, objectCode, NoteType.DROPLET)));
 
                 objects.Add(sliderObject);
@@ -116,7 +115,7 @@ namespace MapsetChecksCatch.Helper
         // Get all edge times except of the slider head
         public static IEnumerable<double> GetEdgeTimes(Slider sObject)
         {
-            for (var i = 0; i < sObject.edgeAmount; ++i)
+            for (var i = 0; i < sObject.EdgeAmount; ++i)
                 yield return sObject.time + sObject.GetCurveDuration() * (i + 1);
         }
 
@@ -142,10 +141,11 @@ namespace MapsetChecksCatch.Helper
             allObjects.Sort((h1, h2) => h1.time.CompareTo(h2.time));
 
             // Using the way how lazer calculates hyperdashes as it seems to be in line with stable
-            double halfCatcherWidth = CalculateCatchWidth(beatmap.difficultySettings.circleSize) / 2;
+            float catcherWidth = CalculateCatchWidth(beatmap.DifficultySettings.circleSize);
+            float halfCatcherWidth = catcherWidth * 0.5f;
 
             halfCatcherWidth /= ALLOWED_CATCH_RANGE;
-            double baseWalkRange = halfCatcherWidth / 4;
+            double baseWalkRange = halfCatcherWidth * 0.95;
 
             var lastDirection = NoteDirection.NONE;
             double dashRange = halfCatcherWidth;
@@ -224,7 +224,7 @@ namespace MapsetChecksCatch.Helper
             var metadata = new ObjectMetadata {
                 Direction = next.X > current.X ? NoteDirection.LEFT : NoteDirection.RIGHT,
                 // 1/4th of a frame of grace time, taken from osu-stable
-                TimeToNext = next.time - current.time - 1000f / 60f / 4,
+                TimeToNext = (int) next.time - (int) current.time - 1000f / 60f / 4,
                 DistanceInOsuCords = Math.Abs(next.X - current.X),
             };
 
@@ -242,9 +242,9 @@ namespace MapsetChecksCatch.Helper
             metadata.DistanceToDash = (float)(metadata.TimeToNext * BASE_WALK_SPEED - walkDistanceToNext);
 
             // Label the type of movement based on if the distance is dashable or walkable
-            if (metadata.DistanceToHyper <= 0) {
+            if (metadata.DistanceToHyper < 0) {
                 metadata.MovementType = MovementType.HYPERDASH;
-            } else if (metadata.DistanceToDash <= 0) {
+            } else if (metadata.DistanceToDash < 0) {
                 metadata.MovementType = MovementType.DASH;
             } else {
                 metadata.MovementType = MovementType.WALK;
@@ -255,7 +255,7 @@ namespace MapsetChecksCatch.Helper
         
         public static double GetBeatsPerMinute(this TimingLine timingLine)
         {
-            var msPerBeatString = timingLine.code.Split(",")[1];
+            var msPerBeatString = timingLine.Code.Split(",")[1];
             var msPerBeat = double.Parse(msPerBeatString, CultureInfo.InvariantCulture);
             
             return 60000 / msPerBeat;
@@ -276,22 +276,17 @@ namespace MapsetChecksCatch.Helper
 
         private static bool IsEdgeMovement(Beatmap beatmap, CatchHitObject hitObject)
         {
-            if (hitObject.MovementType == MovementType.HYPERDASH)
-            {
-                return false;
-            }
-
-            // 1,44 * bpm
-            var comfyDash = 1.44 * beatmap.GetBpm(hitObject);
-            var pixelsScale = (int) beatmap.GetBpmScale(hitObject) * 10;
-
             switch (hitObject.MovementType)
             {
                 case MovementType.WALK:
-                    var xDistance = Math.Abs(hitObject.X - hitObject.Target.X);
-                    return xDistance >= comfyDash * beatmap.GetBpmScale(hitObject);
+                    // 1,44 * bpm
+                    double comfyDash = 1.44 * beatmap.GetBpm(hitObject);
+                    float xDistance = Math.Abs(hitObject.X - hitObject.Target.X);
+                    return xDistance > comfyDash * beatmap.GetBpmScale(hitObject);
                 case MovementType.DASH:
-                    return hitObject.DistanceToHyper <= pixelsScale;
+                    double pixelScale = 10.0 * beatmap.GetBpmScale(hitObject);
+                    return hitObject.DistanceToHyper < pixelScale;
+                case MovementType.HYPERDASH:
                 default:
                     return false;
             }
