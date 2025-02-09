@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,11 +11,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Include="MapsetParser">
-      <HintPath>..\MapsetVerifierFramework\bin\Debug\netcoreapp3.1\MapsetParser.dll</HintPath>
-    </Reference>
-    <Reference Include="MapsetVerifierFramework">
-      <HintPath>..\MapsetVerifierFramework\bin\Debug\netcoreapp3.1\MapsetVerifierFramework.dll</HintPath>
+    <Reference Include="MapsetVerifier">
+      <HintPath>..\MapsetVerifier\src\bin\Debug\net8.0\MapsetVerifier.dll</HintPath>
     </Reference>
   </ItemGroup>
 

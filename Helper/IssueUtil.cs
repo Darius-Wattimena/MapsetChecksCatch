@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using MapsetVerifierFramework.objects;
+using MapsetVerifier.Framework.Objects;
 
 namespace MapsetChecksCatch.Helper
 {

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
-using MapsetParser.objects;
-using MapsetParser.statics;
-using MapsetVerifierFramework.objects;
-using MapsetVerifierFramework.objects.attributes;
-using MapsetVerifierFramework.objects.metadata;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Parser.Statics;
+using MapsetVerifier.Framework.Objects;
+using MapsetVerifier.Framework.Objects.Attributes;
+using MapsetVerifier.Framework.Objects.Metadata;
 
 namespace MapsetChecksCatch.Checks.Compose
 {
@@ -49,14 +49,14 @@ namespace MapsetChecksCatch.Checks.Compose
             {
                 { "Hyperdash",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} {1} is a hyper.",
+                            "{0} {1} is a hyperdash.",
                             "timestamp - ", "object")
                         .WithCause(
                             "Distance between the two objects is too high, triggering a hyperdash distance")
                 },
                 { "HyperdashSliderPart",
                     new IssueTemplate(Issue.Level.Problem,
-                            "{0} {1} is an slider droplet/head/repeat hyper.",
+                            "{0} Slider hyperdash on {1}.",
                             "timestamp - ", "object")
                         .WithCause(
                             "Distance between the two objects is too high, triggering a hyperdash distance")
@@ -87,7 +87,7 @@ namespace MapsetChecksCatch.Checks.Compose
                             GetTemplate("HyperdashSliderPart"),
                             beatmap,
                             TimestampHelper.Get(catchObject, catchObject.Target),
-                            catchObject.GetNoteTypeName()
+                            catchObject.GetNoteTypeName().ToLower()
                         ).ForDifficulties(Beatmap.Difficulty.Hard);
                         break;
                 }

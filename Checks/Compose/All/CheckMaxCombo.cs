@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using MapsetChecksCatch.Helper;
-using MapsetParser.objects;
-using MapsetParser.objects.hitobjects;
-using MapsetParser.statics;
-using MapsetVerifierFramework.objects;
-using MapsetVerifierFramework.objects.attributes;
-using MapsetVerifierFramework.objects.metadata;
-using static MapsetParser.objects.HitObject;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Parser.Objects.HitObjects;
+using MapsetVerifier.Parser.Statics;
+using MapsetVerifier.Framework.Objects;
+using MapsetVerifier.Framework.Objects.Attributes;
+using MapsetVerifier.Framework.Objects.Metadata;
+using static MapsetVerifier.Parser.Objects.HitObject;
 
 namespace MapsetChecksCatch.Checks.Compose.All
 {
@@ -93,7 +93,7 @@ namespace MapsetChecksCatch.Checks.Compose.All
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
             var count = 0;
-            var catchObjects = beatmap.hitObjects;
+            var catchObjects = beatmap.HitObjects;
 
             if (catchObjects == null || catchObjects.Count == 0)
             {
@@ -109,9 +109,9 @@ namespace MapsetChecksCatch.Checks.Compose.All
 
                 // Parse hitobject types as we can't check flags
                 var objectCodeArgs = currentObject.code.Split(',');
-                var objectTypes = (Type) int.Parse(objectCodeArgs[3]);
+                var objectTypes = (Types) int.Parse(objectCodeArgs[3]);
 
-                if (objectTypes.HasFlag(Type.NewCombo) || objectTypes.HasFlag(Type.Spinner))
+                if (objectTypes.HasFlag(Types.NewCombo) || objectTypes.HasFlag(Types.Spinner))
                 {
                     issues.AddIfNotNull(GetComboIssues(beatmap, startObject, count, ThresholdCup, Beatmap.Difficulty.Easy));
                     issues.AddIfNotNull(GetComboIssues(beatmap, startObject, count, ThresholdSalad, Beatmap.Difficulty.Normal));
@@ -128,7 +128,7 @@ namespace MapsetChecksCatch.Checks.Compose.All
 
                     if (currentObject is Slider currentSlider)
                     {
-                        count += BeatmapDistanceCalculator.GetEdgeTimes(currentSlider).Count() + currentSlider.sliderTickTimes.Count;
+                        count += BeatmapDistanceCalculator.GetEdgeTimes(currentSlider).Count() + currentSlider.SliderTickTimes.Count;
                     }
                 }
             }

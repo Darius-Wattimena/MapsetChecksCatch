@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using MapsetChecksCatch.Checks.General;
 using MapsetChecksCatch.Helper;
-using MapsetParser.objects;
-using MapsetParser.statics;
-using MapsetVerifierFramework.objects;
-using MapsetVerifierFramework.objects.attributes;
-using MapsetVerifierFramework.objects.metadata;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Parser.Statics;
+using MapsetVerifier.Framework.Objects;
+using MapsetVerifier.Framework.Objects.Attributes;
+using MapsetVerifier.Framework.Objects.Metadata;
 
 namespace MapsetChecksCatch.Checks.Compose.Platter
 {
@@ -49,8 +49,8 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                 },
                 { "TooStrongHigherSnapFollowedByAntiFlow",
                     new IssueTemplate(Issue.Level.Warning,
-                            "{0} Too strong higher-snapped hyperdashes followed by antiflow, allowed trigger distance {1}.",
-                            "timestamp - ", "amount")
+                            "{0} Too strong higher-snapped hyperdashes followed by antiflow, allowed trigger distance {1} current {2}.",
+                            "timestamp - ", "trigger distance allowed", "trigger distance")
                         .WithCause(
                             "Too strong higher-snapped hyperdash followed by antiflow.")
                 }
@@ -84,7 +84,8 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                                     GetTemplate("TooStrongHigherSnapFollowedByAntiFlow"),
                                     beatmap,
                                     TimestampHelper.Get(currentObject, currentObject.Target),
-                                    (int) (hyperTriggerDistance * 1.1)
+                                    (int) (hyperTriggerDistance * 1.1),
+                                    currentTriggerDistance
                                 ).ForDifficulties(Beatmap.Difficulty.Hard);
                             }
                         }
@@ -94,7 +95,7 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                             yield return new Issue(
                                 GetTemplate("HigherSnapFollowedByDashesOrHyperdashes"),
                                 beatmap,
-                                TimestampHelper.Get(currentObject, currentObject.Target)
+                                TimestampHelper.Get(currentObject, currentObject.Target, currentObject.Target.Target)
                             ).ForDifficulties(Beatmap.Difficulty.Hard);
                         }
                     }

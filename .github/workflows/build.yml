@@ -1,0 +1,32 @@
+name: Build and Test
+
+# Run on all changes
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: main
+
+      - name: Checkout MV
+        uses: actions/checkout@v4
+        with:
+          repository: Naxesss/MapsetVerifier
+          path: MapsetVerifier
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build MV for latest .dll
+        run: dotnet build ./MapsetVerifier/src
+      - name: Restore dependencies
+        run: dotnet restore main
+      - name: Build
+        run: dotnet build main --no-restore
+      - name: Test
+        run: dotnet test main --no-build --verbosity normal

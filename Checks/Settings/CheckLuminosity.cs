@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using MapsetParser.objects;
-using MapsetVerifierFramework.objects;
-using MapsetVerifierFramework.objects.attributes;
-using MapsetVerifierFramework.objects.metadata;
+using MapsetVerifier.Parser.Objects;
+using MapsetVerifier.Framework.Objects;
+using MapsetVerifier.Framework.Objects.Attributes;
+using MapsetVerifier.Framework.Objects.Metadata;
 
 namespace MapsetChecksCatch.Checks.Settings
 {
@@ -56,9 +56,9 @@ namespace MapsetChecksCatch.Checks.Settings
 
         public override IEnumerable<Issue> GetIssues(Beatmap beatmap)
         {
-            for (var i = 0; i < beatmap.colourSettings.combos.Count; i++)
+            for (var i = 0; i < beatmap.ColourSettings.combos.Count; i++)
             {
-                var comboColour = beatmap.colourSettings.combos[i];
+                var comboColour = beatmap.ColourSettings.combos[i];
                 var luminosity = GetLuminosity(comboColour);
 
                 if (luminosity < 50)
