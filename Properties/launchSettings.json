@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Test": {
+    "Build and Launch installed MV": {
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\Mapset Verifier\\Mapset Verifier.exe",
       "workingDirectory": "C:\\Program Files\\Mapset Verifier",

@@ -29,7 +29,7 @@ This adds support for all osu!catch rules specified on the [Ranking Criteria pag
 
 ### First set up
 
-1. Clone this repostiory 
+1. Clone this repository.
 2. Clone [MapsetVerifier](https://github.com/Naxesss/MapsetVerifier) and make sure the two projects are in the same root.
    For example a layout like this:
    ```
@@ -43,9 +43,6 @@ This adds support for all osu!catch rules specified on the [Ranking Criteria pag
 4. Go back to the MapsetChecksCatch project and execute the `./local-build.bat` script. This takes care of building the project and moving the file to the `\Mapset Verifier Externals\checks` folder in AppData.
 	- Alternatively you can run `dotnet build ./MapsetChecksCatch.sln` and move the result that is in `\bin\Debug\net8.0\MapsetChecksCatch.dll` to the external checks folder by hand.
 
-### Making changes
+### Testing changes
 
-1. Do your code changes
-2. Close MV
-3. Build plugin using `./local-build.bat`
-4. Re-open MV and test out your changes.
+1. Run `Build and Launch installed MV`.
