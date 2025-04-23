@@ -12,6 +12,8 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
     [Check]
     public class CheckBasicSnappedDash : BeatmapCheck
     {
+        public const int MAX_ALLOWED_DASHES = 4;
+
         public override CheckMetadata GetMetadata() => new BeatmapCheckMetadata
         {
             Category = "Compose",
@@ -79,13 +81,13 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
                     var total = consecutiveObjects.Count;
                     consecutiveObjects.Add(currentObject);
 
-                    if (total > 2)
+                    if (total > MAX_ALLOWED_DASHES)
                     {
                         yield return new Issue(
                             GetTemplate("BasicSnappedConsecutive"),
                             beatmap,
                             TimestampHelper.Get(consecutiveObjects.ToArray()),
-                            2,
+                            MAX_ALLOWED_DASHES,
                             total
                         ).ForDifficulties(Beatmap.Difficulty.Hard);
                     }
@@ -98,13 +100,13 @@ namespace MapsetChecksCatch.Checks.Compose.Platter
             
             var lastTotal = consecutiveObjects.Count;
             
-            if (lastTotal > 2)
+            if (lastTotal > MAX_ALLOWED_DASHES)
             {
                 yield return new Issue(
                     GetTemplate("BasicSnappedConsecutive"),
                     beatmap,
                     TimestampHelper.Get(consecutiveObjects.ToArray()),
-                    2,
+                    MAX_ALLOWED_DASHES,
                     lastTotal
                 ).ForDifficulties(Beatmap.Difficulty.Hard);
             }
